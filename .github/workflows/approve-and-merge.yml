@@ -3,6 +3,7 @@ name: approve-and-merge
 on: pull_request_target
 
 permissions:
+  content: read
   pull-requests: write
 
 jobs:
@@ -66,6 +67,8 @@ jobs:
 
         $isTrusted = $onlyTrusted -And $isPatch
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
+
+    # TODO Remove review if the PR is not a trusted update.
 
     - name: Checkout code
       uses: actions/checkout@v3
