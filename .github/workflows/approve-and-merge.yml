@@ -21,6 +21,8 @@ jobs:
 
     - name: Check if Microsoft or System dependencies
       id: check-dependencies
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: pwsh
       run: |
         # Replicate the logic in the dependabot/fetch-metadata action.
