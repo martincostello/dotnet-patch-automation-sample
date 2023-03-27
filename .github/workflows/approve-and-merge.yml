@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.pull_request.user.login == 'dependabot[bot]' ||
-      github.event.pull_request.user.login == 'github-actions[bot]'
+      github.event.pull_request.user.login == 'github-actions[bot]' ||
+      github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME
 
     steps:
 
