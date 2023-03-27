@@ -14,30 +14,54 @@ jobs:
 
     steps:
 
-    - name: Get Dependabot metadata
-      uses: dependabot/fetch-metadata@v1
-      id: dependabot-metadata
+    - name: Install powershell-yaml
+      shell: pwsh
+      run: Install-Module -Name powershell-yaml -Force -MaximumVersion "0.4.7"
 
     - name: Check if Microsoft or System dependencies
       id: check-dependencies
       shell: pwsh
       run: |
-        $dependencies = "${{ steps.dependabot-metadata.outputs.dependency-names }}".Split(',')
-        $isPatch = "${{ steps.dependabot-metadata.outputs.update-type }}" -eq "version-update:semver-patch"
-        $onlyAllowedDependencies = $dependencies.Length -gt 0
+        # Replicate the logic in the dependabot/fetch-metadata action.
+        # See https://github.com/dependabot/fetch-metadata/blob/aea2135c95039f05c64436f1d14638c300e10b2b/src/dependabot/update_metadata.ts#L29-L68.
+        $commits = gh api `
+          /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits `
+          --jq '.[] | { author: .author.login, message: .commit.message }' | ConvertFrom-Json
+
+        $dependencies = @()
+
+        foreach ($commit in $commits) {
+          $match = [Regex]::Match($commit.Message, '(?m)^-{3}\s(?<dependencies>[\S|\s]*?)\s^\.{3}$')
+          if ($match.Success -eq $True) {
+            $metadata = ($match.Value | ConvertFrom-Yaml -Ordered)
+            $updates = $metadata["updated-dependencies"]
+            if ($updates) {
+              foreach ($update in $updates) {
+                $dependencies += @{
+                  Name = $update['dependency-name'];
+                  Type = $update['update-type'];
+                }
+              }
+            }
+          }
+        }
+
+        $isPatch = $dependencies.Length -gt 0
+        $onlyTrusted = $dependencies.Length -gt 0
 
         foreach ($dependency in $dependencies) {
-          $onlyAllowedDependencies = $onlyAllowedDependencies -And
+          $isPatch = $isPatch -And $dependency.Type -eq "version-update:semver-patch"
+          $onlyTrusted = $onlyTrusted -And
             (
-              ($dependency -eq "Microsoft.NET.Sdk") -Or
-              $dependency.StartsWith('Microsoft.AspNetCore.') -Or
-              $dependency.StartsWith('Microsoft.EntityFrameworkCore.') -Or
-              $dependency.StartsWith('Microsoft.Extensions.') -Or
-              $dependency.StartsWith('System.')
+              ($dependency.Name -eq "Microsoft.NET.Sdk") -Or
+              $dependency.Name.StartsWith('Microsoft.AspNetCore.') -Or
+              $dependency.Name.StartsWith('Microsoft.EntityFrameworkCore.') -Or
+              $dependency.Name.StartsWith('Microsoft.Extensions.') -Or
+              $dependency.Name.StartsWith('System.')
             )
         }
 
-        $isTrusted = $onlyAllowedDependencies -And $isPatch
+        $isTrusted = $onlyTrusted -And $isPatch
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
     - name: Checkout code
