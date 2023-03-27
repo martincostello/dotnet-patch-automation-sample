@@ -1,0 +1,79 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - '**/*.gitattributes'
+    - '**/*.gitignore'
+    - '**/*.md'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+  FORCE_COLOR: 1
+  NUGET_XMLDOC_MODE: skip
+  TERM: xterm
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Get npm cache directory
+      id: npm-cache-dir
+      shell: pwsh
+      run: echo "dir=$(npm config get cache)" >> ${env:GITHUB_OUTPUT}
+
+    - name: Setup npm cache
+      uses: actions/cache@v3
+      id: npm-cache
+      with:
+        path: ${{ steps.npm-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-node-
+
+    - name: Setup NuGet cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+        restore-keys: ${{ runner.os }}-nuget-
+
+    - name: Setup Playwright cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('Directory.Packages.props') }}
+
+    - name: Build, Test and Publish
+      shell: pwsh
+      run: ./build.ps1
+
+    - uses: codecov/codecov-action@v3
+      name: Upload coverage to Codecov
+      with:
+        files: ./artifacts/coverage.cobertura.xml,./src/TodoApp/coverage/lcov.info
