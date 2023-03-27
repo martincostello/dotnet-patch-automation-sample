@@ -52,12 +52,6 @@ cd dotnet-patch-automation-sample
 Any feedback or issues can be added to the issues for this project in
 [GitHub](https://github.com/martincostello/dotnet-patch-automation-sample/issues "Issues for this project on GitHub.com").
 
-## Acknowledgements
-
-Thanks to David Fowler ([@davidfowl](https://github.com/davidfowl)) from the
-ASP.NET Core team for helping out with resolving issues with Minimal Actions
-found from testing this sample with the ASP.NET Core 6 pre-releases!
-
 ## Repository
 
 The repository is hosted in
