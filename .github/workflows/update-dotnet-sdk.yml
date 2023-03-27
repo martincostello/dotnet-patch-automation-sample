@@ -2,11 +2,12 @@ name: update-dotnet-sdk
 
 # Using a real user/email is recommended instead of using GITHUB_TOKEN, otherwise pull
 # requests opened by this workflow, and commits pushed, will not queue your CI status checks.
+# Similarly, the approve-and-merge workflow will also not run to auto-merge the pull request.
 # See https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow.
 env:
-  ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  GIT_COMMIT_USER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
-  GIT_COMMIT_USER_NAME: 'github-actions[bot]'
+  ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+  GIT_COMMIT_USER_EMAIL: ${{ vars.GIT_COMMIT_USER_EMAIL }}
+  GIT_COMMIT_USER_NAME: ${{ vars.GIT_COMMIT_USER_NAME }}
   TERM: xterm
 
 on:
@@ -16,14 +17,6 @@ on:
     - cron:  '00 21 * * TUE'
   # Also support running the workflow manually on-demand.
   workflow_dispatch:
-
-# Configure the GitHub access token to be able to clone
-# the repository, push a branch containing the SDK update,
-# and then open a pull request to merge the change. This
-# can be changed to just 'contents:read' if you do not use GITHUB_TOKEN.
-permissions:
-  contents: write
-  pull-requests: write
 
 jobs:
 
