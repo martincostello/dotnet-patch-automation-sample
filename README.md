@@ -29,6 +29,7 @@ works and you can log into the Todo App UI.
 
 > 💡 When creating the GitHub OAuth app, use `https://localhost:5001/sign-in-github`
 as the _Authorization callback URL_.
+>
 > ⚠️ Do not commit GitHub OAuth secrets to source control. Configure them
 with [User Secrets][user-secrets] instead.
 
@@ -36,7 +37,7 @@ with [User Secrets][user-secrets] instead.
 
 Compiling the application yourself requires Git and the
 [.NET SDK](https://www.microsoft.com/net/download/core "Download the .NET SDK")
-to be installed (version `7.0.100` or later).
+to be installed (version `7.0.200` or later).
 
 To build and test the application locally from a terminal/command-line, run the
 following set of commands:
