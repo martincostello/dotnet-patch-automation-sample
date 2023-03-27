@@ -1,0 +1,58 @@
+name: approve-and-merge
+
+on: pull_request_target
+
+permissions:
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.user.login == 'dependabot[bot]' ||
+      github.event.pull_request.user.login == 'github-actions[bot]'
+
+    steps:
+
+    - name: Get Dependabot metadata
+      uses: dependabot/fetch-metadata@v1
+      id: dependabot-metadata
+
+    - name: Check if Microsoft or System dependencies
+      id: check-dependencies
+      shell: pwsh
+      run: |
+        $dependencies = "${{ steps.dependabot-metadata.outputs.dependency-names }}".Split(',')
+        $isPatch = "${{ steps.dependabot-metadata.outputs.update-type }}" -eq "version-update:semver-patch"
+        $onlyAllowedDependencies = $dependencies.Length -gt 0
+
+        foreach ($dependency in $dependencies) {
+          $onlyAllowedDependencies = $onlyAllowedDependencies -And
+            (
+              ($dependency -eq "Microsoft.NET.Sdk") -Or
+              $dependency.StartsWith('Microsoft.AspNetCore.') -Or
+              $dependency.StartsWith('Microsoft.EntityFrameworkCore.') -Or
+              $dependency.StartsWith('Microsoft.Extensions.') -Or
+              $dependency.StartsWith('System.')
+            )
+        }
+
+        $isTrusted = $onlyAllowedDependencies -And $isPatch
+        "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+      if: ${{ steps.check-dependencies.outputs.is-trusted-update }}
+
+    - name: Approve pull request and enable auto-merge
+      if: ${{ steps.check-dependencies.outputs.is-trusted-update }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+      shell: bash
+      run: |
+        gh pr checkout "$PR_URL"
+        if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ];
+        then gh pr review --approve "$PR_URL" && gh pr merge --auto --merge "$PR_URL"
+        else echo "PR already approved.";
+        fi
