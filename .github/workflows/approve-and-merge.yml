@@ -7,8 +7,10 @@ permissions:
   pull-requests: write
 
 jobs:
-  dependabot:
+  review-pull-request:
     runs-on: ubuntu-latest
+
+    # Only run for pull requests created by accounts we are interested in
     if: |
       github.event.pull_request.user.login == 'dependabot[bot]' ||
       github.event.pull_request.user.login == 'github-actions[bot]' ||
@@ -20,7 +22,7 @@ jobs:
       shell: pwsh
       run: Install-Module -Name powershell-yaml -Force -MaximumVersion "0.4.7"
 
-    - name: Check if Microsoft or System dependencies
+    - name: Check which dependencies were updated
       id: check-dependencies
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,14 +70,11 @@ jobs:
         $isTrusted = $onlyTrusted -And $isPatch
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
-    # TODO Remove review if the PR is not a trusted update.
-
     - name: Checkout code
       uses: actions/checkout@v3
-      if: ${{ steps.check-dependencies.outputs.is-trusted-update }}
 
     - name: Approve pull request and enable auto-merge
-      if: ${{ steps.check-dependencies.outputs.is-trusted-update }}
+      if: ${{ steps.check-dependencies.outputs.is-trusted-update == "true" }}
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_URL: ${{ github.event.pull_request.html_url }}
@@ -83,6 +82,19 @@ jobs:
       run: |
         gh pr checkout "$PR_URL"
         if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ];
-        then gh pr review --approve "$PR_URL" && gh pr merge --auto --merge "$PR_URL"
+        then gh pr review --approve "$PR_URL" && gh pr merge --auto --squash "$PR_URL"
         else echo "PR already approved.";
+        fi
+
+    - name: Disable auto-merge
+      if: ${{ steps.check-dependencies.outputs.is-trusted-update != "true" }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+      shell: bash
+      run: |
+        gh pr checkout "$PR_URL"
+        if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" == "APPROVED" ];
+        then gh pr merge --disable-auto "$PR_URL"
+        else echo "PR not already approved.";
         fi
