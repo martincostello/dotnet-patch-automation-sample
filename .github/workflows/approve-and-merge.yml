@@ -135,6 +135,7 @@ jobs:
         if ($approvals.Length -eq 0) {
           gh pr review --approve "$PR_URL"
           gh pr merge --auto --squash "$PR_URL"
+        }
         else {
           Write-Host "PR already approved.";
         }
@@ -163,6 +164,7 @@ jobs:
               -f message='Cannot approve as other changes have been introduced.' `
               -f event='DISMISS'
           }
+        }
         else {
           Write-Host "PR not already approved.";
         }
