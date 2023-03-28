@@ -131,9 +131,9 @@ jobs:
         # and that the application is still functional after the update; any bug that might be
         # introduced by the update should be caught by the tests. If that happens, the build
         # workflow will fail and the preconditions for the auto-merge to happen won't be met.
-        $approvals = gh api `
-            /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews `
-            --jq '.[] | select(.user.login=="github-actions[bot]") | select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
+        $approvals = gh api /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews | ConvertFrom-Json
+        $approvals = $approvals | Where-Object { $_.user.login -eq "github-actions[bot]" }
+        $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
         if ($approvals.Length -eq 0) {
           gh pr review --approve "$PR_URL"
@@ -154,9 +154,9 @@ jobs:
         PR_URL: ${{ github.event.pull_request.html_url }}
       shell: pwsh
       run: |
-        $approvals = gh api `
-            /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews `
-            --jq '.[] | select(.user.login=="github-actions[bot]") | select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
+        $approvals = gh api /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews | ConvertFrom-Json
+        $approvals = $approvals | Where-Object { $_.user.login -eq "github-actions[bot]" }
+        $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
         if ($approvals.Length -gt 0) {
           gh pr merge --disable-auto "$PR_URL"
