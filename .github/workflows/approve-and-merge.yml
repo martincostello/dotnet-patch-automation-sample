@@ -1,7 +1,28 @@
+# This workflow runs when a pull request is opened or updated, and checks if the pull
+# request was opened by a user we trust to do automated changes, and if so, approves
+# the pull request and enables auto-merge if it only updates the .NET SDK and
+# Microsoft-published dependencies to the latest patch version for the current release.
+#
+# This workflow assumes that the following processes are in place to ensure that
+# automatic merges with no human involvement are as safe as possible:
+# - Pull requests require at least one approving review before merging;
+# - Pull requests require at least one required status check to pass before merging;
+# - The build workflow(s) run test(s) that provide adequate test coverage.
+#
+# If you need more than one reviewer or require CODEOWNERS approval, then this workflow
+# will not be able to merge the pull request automatically without some human input.
+#
+# This workflow is based on the examples from the dependabot/fetch-metadata action:
+# https://github.com/dependabot/fetch-metadata#auto-approving
+# https://github.com/dependabot/fetch-metadata#enabling-auto-merge
+
 name: approve-and-merge
 
-on: pull_request_target
+on: pull_request
 
+# GITHUB_TOKEN needs write access to the contents to be able
+# to enable auto-merge, and write access to pull requests to
+# be able to approve the pull request and optionally apply labels.
 permissions:
   contents: write
   pull-requests: write
@@ -11,10 +32,8 @@ jobs:
     runs-on: ubuntu-latest
 
     # Only run for pull requests created by accounts we are interested in
-    if: |
-      github.event.pull_request.user.login == 'dependabot[bot]' ||
-      github.event.pull_request.user.login == 'github-actions[bot]' ||
-      github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME
+    # that might be used to create a pull request to update the .NET SDK.
+    if: ${{ github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME }}
 
     steps:
 
@@ -30,15 +49,29 @@ jobs:
       run: |
         # Replicate the logic in the dependabot/fetch-metadata action.
         # See https://github.com/dependabot/fetch-metadata/blob/aea2135c95039f05c64436f1d14638c300e10b2b/src/dependabot/update_metadata.ts#L29-L68.
+        # Query the GitHub API to get the commits in the pull request.
         $commits = gh api `
           /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits `
           --jq '.[] | { author: .author.login, message: .commit.message }' | ConvertFrom-Json
 
+        # We should only approve pull requests that only contain commits from
+        # the GitHub user we expected and only commits that contain the metadata
+        # we need to determine what dependencies were updated by the other workflow.
+        $expectedUser = "${{ vars.GIT_COMMIT_USER_NAME }}"
+        $onlyDependencyUpdates = $True
+        $onlyChangesFromUser = $True
+
         $dependencies = @()
 
         foreach ($commit in $commits) {
+          if ($commit.Author -ne $expectedUser) {
+            # Some other commit is in the pull request
+            $onlyChangesFromUser = $False
+          }
+          # Extract the YAML metadata block from the commit message.
           $match = [Regex]::Match($commit.Message, '(?m)^-{3}\s(?<dependencies>[\S|\s]*?)\s^\.{3}$')
           if ($match.Success -eq $True) {
+            # Extract the names and update type from each dependency.
             $metadata = ($match.Value | ConvertFrom-Yaml -Ordered)
             $updates = $metadata["updated-dependencies"]
             if ($updates) {
@@ -50,8 +83,13 @@ jobs:
               }
             }
           }
+          else {
+            # The pull request contains a commit that we didn't expect as the metadata is missing.
+            $onlyDependencyUpdates = $False
+          }
         }
 
+        # Did we find at least one dependency?
         $isPatch = $dependencies.Length -gt 0
         $onlyTrusted = $dependencies.Length -gt 0
 
@@ -60,6 +98,8 @@ jobs:
           $onlyTrusted = $onlyTrusted -And
             (
               ($dependency.Name -eq "Microsoft.NET.Sdk") -Or
+              # This list of trusted package prefixes needs to stay in sync with the
+              # list of package prefixes passed to dotnet-outdated in the other workflow.
               $dependency.Name.StartsWith('Microsoft.AspNetCore.') -Or
               $dependency.Name.StartsWith('Microsoft.EntityFrameworkCore.') -Or
               $dependency.Name.StartsWith('Microsoft.Extensions.') -Or
@@ -67,7 +107,11 @@ jobs:
             )
         }
 
-        $isTrusted = $onlyTrusted -And $isPatch
+        # We only trust the pull request to approve and auto-merge it
+        # if it only contains commits which change the .NET SDK and
+        # Microsoft-published NuGet packages that were made by the user
+        # we expect to make those changes in the other workflow.
+        $isTrusted = (($onlyTrusted -And $isPatch) -And $onlyUser) -And $onlyDependencyUpdates
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
     - name: Checkout code
@@ -81,11 +125,20 @@ jobs:
       shell: bash
       run: |
         gh pr checkout "$PR_URL"
+        # As long as it's not already approved, approve the pull request and enable auto-merge.
+        # Our CI tests coupled with required statuses should ensure that the changes compile
+        # and that the application is still functional after the update; any bug that might be
+        # introduced by the update should be caught by the tests. If that happens, the build
+        # workflow will fail and the preconditions for the auto-merge to happen won't be met.
         if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ];
         then gh pr review --approve "$PR_URL" && gh pr merge --auto --squash "$PR_URL"
         else echo "PR already approved.";
         fi
 
+    # If something was present in the pull request that isn't expected, then disable
+    # auto-merge so that a human is required to look at the pull request and make a
+    # decision to merge it or not. This is to prevent the pull request from being merged
+    # automatically if there's an unexpected change introduced.
     - name: Disable auto-merge
       if: ${{ steps.check-dependencies.outputs.is-trusted-update != 'true' }}
       env:

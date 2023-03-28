@@ -1,9 +1,15 @@
+# This workflow uses the martincostello/update-dotnet-sdk and the dotnet-outdated
+# global tool to update the .NET SDK and Microsoft-published NuGet packages for
+# the application in this repository to the latest patch version on a weekly basis.
+
 name: update-dotnet-sdk
 
 # Using a real user/email is recommended instead of using GITHUB_TOKEN, otherwise pull
 # requests opened by this workflow, and commits pushed, will not queue your CI status checks.
-# Similarly, the approve-and-merge workflow will also not run to auto-merge the pull request.
-# See https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow.
+# Similarly, the approve-and-merge workflow will also not run if GITHUB_TOKEN is used.
+# See https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+# The Git commit user name and email are set as variables in the organization/repository settings.
+# See https://docs.github.com/en/actions/learn-github-actions/variables
 env:
   ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   GIT_COMMIT_USER_EMAIL: ${{ vars.GIT_COMMIT_USER_EMAIL }}
@@ -21,17 +27,26 @@ on:
 jobs:
 
   update-dotnet-sdk:
+
     name: Update .NET SDK
     runs-on: ubuntu-latest
+    # We don't want anyone forking this repository to also run this workflow
     if: ${{ github.event.repository.fork == false }}
 
     steps:
 
+    # Checkout the repository so the global.json file can be inspected and
+    # updated if a new patch version of the SDK is available. The token is
+    # iused so that the workflow can push any changes back to the repository
+    # and that pushes as that user trigger any CI workflows that may trigger
+    # on push, such as if any NuGet packages are updated after the PR is opened.
     - name: Checkout code
       uses: actions/checkout@v3
       with:
         token: ${{ env.ACCESS_TOKEN }}
 
+    # Run the action to check if a new version of the .NET SDK is available
+    # for the same release channel as the SDK specified in global.json.
     - name: Update .NET SDK
       id: update-dotnet-sdk
       uses: martincostello/update-dotnet-sdk@v2
@@ -41,6 +56,9 @@ jobs:
         user-email: ${{ env.GIT_COMMIT_USER_EMAIL }}
         user-name: ${{ env.GIT_COMMIT_USER_NAME }}
 
+    # If the action updated the .NET SDK, then install the .NET SDK and then
+    # run the dotnet-outdated global tool to update any Microsoft-published
+    # NuGet packages for that patch release of .NET to their latest versions too.
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v3
       if : ${{ steps.update-dotnet-sdk.outputs.sdk-updated == 'true' }}
@@ -64,6 +82,11 @@ jobs:
 
         Write-Host "Checking for .NET NuGet package(s) to update..."
 
+        # The --version-lock Major option is used to only update packages
+        # to the latest patch version of the current major version.
+        # The --include flags are used to only update Microsoft-published
+        # NuGet packages that are typically published with a new patch
+        # release of .NET that accompanies a new .NET SDK release.
         dotnet outdated `
           --upgrade `
           --version-lock Major `
@@ -75,6 +98,7 @@ jobs:
 
         $dependencies = @()
 
+        # Determine the distinct set of package updates that were applied, if any.
         if (Test-Path $updatesPath) {
           $dependencies = `
             Get-Content -Path $updatesPath | `
@@ -90,6 +114,11 @@ jobs:
 
           $commitMessageLines = @()
 
+          # Generate the commit message in a way that contains metadata similar to the way
+          # commit messages from dependabot updates are generated so that the approve-and-merge
+          # workflow can parse the commits to determine which packages were updated so that
+          # it can determine whether or not it is appropriate to approve the PR and then
+          # automatically merge it if the required statuses for the pull request are successful.
           if ($dependencies.Count -eq 1) {
             $commitMessageLines += "Bump $($dependencies[0].Name) from $($dependencies[0].ResolvedVersion) to $($dependencies[0].LatestVersion)"
             $commitMessageLines += ""
