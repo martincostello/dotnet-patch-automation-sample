@@ -18,7 +18,10 @@ patch .NET applications on a monthly basis with minimal manual effort. :rocket:
 
 ## How it Works
 
-_TODO_
+> :warning: Coming soon. 🚧
+
+The ASP.NET Core application used to demonstrate the automation process is based on the
+Todo App sample from my [_Integration Testing ASP.NET Core Minimal APIs_][dotnet-minimal-api-integration-testing] repository.
 
 ## Debugging
 
@@ -57,7 +60,7 @@ Any feedback or issues can be added to the issues for this project in
 
 The repository is hosted in
 [GitHub](https://github.com/martincostello/dotnet-patch-automation-sample "This project on GitHub.com"):
-https://github.com/martincostello/dotnet-patch-automation-sample.git
+<https://github.com/martincostello/dotnet-patch-automation-sample.git>
 
 ## License
 
