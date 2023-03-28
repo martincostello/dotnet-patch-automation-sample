@@ -136,9 +136,9 @@ jobs:
         $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
         if ($approvals.Length -eq 0) {
-          gh pr checkout "$PR_URL"
-          gh pr review --approve "$PR_URL"
-          gh pr merge --auto --squash "$PR_URL"
+          gh pr checkout "$env:PR_URL"
+          gh pr review --approve "$env:PR_URL"
+          gh pr merge --auto --squash "$env:PR_URL"
         }
         else {
           Write-Host "PR already approved.";
@@ -160,8 +160,8 @@ jobs:
         $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
         if ($approvals.Length -gt 0) {
-          gh pr checkout "$PR_URL"
-          gh pr merge --disable-auto "$PR_URL"
+          gh pr checkout "$env:PR_URL"
+          gh pr merge --disable-auto "$env:PR_URL"
           foreach ($approval in $approvals) {
             gh api `
               --method PUT `
