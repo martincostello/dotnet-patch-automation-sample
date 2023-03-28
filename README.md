@@ -14,7 +14,7 @@ behind - what if we could automate the process of patching our applications? :ro
 
 This sample repository demonstrates how we can use the flexibility of [GitHub Actions][github-actions]
 together with tools such as [dotnet-outdated][dotnet-outdated-github] to automatically
-patch .NET applications on a monthly basis with minimal manual effort. :rocket:
+patch .NET applications on a monthly basis with minimal manual effort. :rocket: :rocket:
 
 ## How it Works
 
