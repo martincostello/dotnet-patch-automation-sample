@@ -111,7 +111,7 @@ jobs:
         # if it only contains commits which change the .NET SDK and
         # Microsoft-published NuGet packages that were made by the user
         # we expect to make those changes in the other workflow.
-        $isTrusted = (($onlyTrusted -And $isPatch) -And $onlyUser) -And $onlyDependencyUpdates
+        $isTrusted = (($onlyTrusted -And $isPatch) -And $onlyChangesFromUser) -And $onlyDependencyUpdates
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
     - name: Checkout code
