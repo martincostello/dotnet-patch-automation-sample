@@ -116,6 +116,9 @@ jobs:
         $isTrusted = (($onlyTrusted -And $isPatch) -And $onlyChangesFromUser) -And $onlyDependencyUpdates
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
+    - name: Checkout code
+      uses: actions/checkout@v3
+
     - name: Approve pull request and enable auto-merge
       if: ${{ steps.check-dependencies.outputs.is-trusted-update == 'true' }}
       env:
@@ -130,7 +133,7 @@ jobs:
         # workflow will fail and the preconditions for the auto-merge to happen won't be met.
         $approvals = gh api `
             /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews `
-            --jq '.[] | select(.user.login=="github-actions[bot]") |  select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
+            --jq '.[] | select(.user.login=="github-actions[bot]") | select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
 
         if ($approvals.Length -eq 0) {
           gh pr review --approve "$PR_URL"
@@ -153,7 +156,7 @@ jobs:
       run: |
         $approvals = gh api `
             /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews `
-            --jq '.[] | select(.user.login=="github-actions[bot]") |  select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
+            --jq '.[] | select(.user.login=="github-actions[bot]") | select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
 
         if ($approvals.Length -gt 0) {
           gh pr merge --disable-auto "$PR_URL"
