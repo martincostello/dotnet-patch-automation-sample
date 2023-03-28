@@ -133,6 +133,10 @@ jobs:
             }
           }
 
+          $commitMessageLines += ""
+          $commitMessageLines += "---"
+          $commitMessageLines += "updated-dependencies:"
+
           foreach ($dependency in $dependencies) {
             $commitMessageLines += "- dependency-name: $($dependency.Name)"
             $commitMessageLines += "  dependency-type: direct:production"
