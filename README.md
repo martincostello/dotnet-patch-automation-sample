@@ -68,6 +68,8 @@ This project is licensed under the
 [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license")
 license.
 
+[approval-dismissed]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/36
+[approved-and-merged]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/37
 [create-github-oauth-app]: https://docs.github.com/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app
 [dotnet-minimal-api-integration-testing]: https://github.com/martincostello/dotnet-minimal-api-integration-testing
 [dotnet-outdated-github]: https://github.com/dotnet-outdated/dotnet-outdated
