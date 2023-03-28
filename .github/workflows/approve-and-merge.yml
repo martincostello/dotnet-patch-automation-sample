@@ -66,6 +66,7 @@ jobs:
         $dependencies = @()
 
         foreach ($commit in $commits) {
+          Write-Host "Commit: $commit"
           if ($commit.Author -ne $expectedUser) {
             # Some other commit is in the pull request
             $onlyChangesFromUser = $False
@@ -96,6 +97,7 @@ jobs:
         $onlyTrusted = $dependencies.Length -gt 0
 
         foreach ($dependency in $dependencies) {
+          Write-Host "Dependency: $($dependency.Name)"
           $isPatch = $isPatch -And $dependency.Type -eq "version-update:semver-patch"
           $onlyTrusted = $onlyTrusted -And
             (
