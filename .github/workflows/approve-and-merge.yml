@@ -18,7 +18,9 @@
 
 name: approve-and-merge
 
-on: pull_request
+on:
+  pull_request:
+    branches: [ main ]
 
 # GITHUB_TOKEN needs write access to the contents to be able
 # to enable auto-merge, and write access to pull requests to
