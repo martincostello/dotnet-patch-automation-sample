@@ -165,7 +165,7 @@ jobs:
           foreach ($approval in $approvals) {
             gh api `
               --method PUT `
-              /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/$($approval.id)/dismissals `
+              /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$($approval.id)/dismissals `
               -f message='Cannot approve as other changes have been introduced.' `
               -f event='DISMISS'
           }
