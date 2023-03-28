@@ -116,40 +116,53 @@ jobs:
         $isTrusted = (($onlyTrusted -And $isPatch) -And $onlyChangesFromUser) -And $onlyDependencyUpdates
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
-    - name: Checkout code
-      uses: actions/checkout@v3
-
     - name: Approve pull request and enable auto-merge
       if: ${{ steps.check-dependencies.outputs.is-trusted-update == 'true' }}
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_URL: ${{ github.event.pull_request.html_url }}
-      shell: bash
+      shell: pwsh
       run: |
-        gh pr checkout "$PR_URL"
         # As long as it's not already approved, approve the pull request and enable auto-merge.
         # Our CI tests coupled with required statuses should ensure that the changes compile
         # and that the application is still functional after the update; any bug that might be
         # introduced by the update should be caught by the tests. If that happens, the build
         # workflow will fail and the preconditions for the auto-merge to happen won't be met.
-        if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ];
-        then gh pr review --approve "$PR_URL" && gh pr merge --auto --squash "$PR_URL"
-        else echo "PR already approved.";
-        fi
+        $approvals = gh api `
+            /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews `
+            --jq '.[] | select(.user.login=="github-actions[bot]") |  select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
+
+        if ($approvals.Length -eq 0) {
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
+        else {
+          Write-Host "PR already approved.";
+        }
 
     # If something was present in the pull request that isn't expected, then disable
     # auto-merge so that a human is required to look at the pull request and make a
     # decision to merge it or not. This is to prevent the pull request from being merged
     # automatically if there's an unexpected change introduced.
-    - name: Disable auto-merge
+    - name: Disable auto-merge and dismiss approvals
       if: ${{ steps.check-dependencies.outputs.is-trusted-update != 'true' }}
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_URL: ${{ github.event.pull_request.html_url }}
-      shell: bash
+      shell: pwsh
       run: |
-        gh pr checkout "$PR_URL"
-        if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" == "APPROVED" ];
-        then gh pr merge --disable-auto "$PR_URL"
-        else echo "PR not already approved.";
-        fi
+        $approvals = gh api `
+            /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews `
+            --jq '.[] | select(.user.login=="github-actions[bot]") |  select(.state=="APPROVED") | { id: .id, state: .state }' | ConvertFrom-Json
+
+        if ($approvals.Length -gt 0) {
+          gh pr merge --disable-auto "$PR_URL"
+          foreach ($approval in $approvals) {
+            gh api `
+              --method PUT `
+              /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/$($approval.id)/dismissals `
+              -f message='Cannot approve as other changes have been introduced.' `
+              -f event='DISMISS'
+          }
+        else {
+          Write-Host "PR not already approved.";
+        }
