@@ -22,16 +22,20 @@ on:
   pull_request:
     branches: [ main ]
 
-# GITHUB_TOKEN needs write access to the contents to be able
-# to enable auto-merge, and write access to pull requests to
-# be able to approve the pull request and optionally apply labels.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 
 jobs:
   review-pull-request:
     runs-on: ubuntu-latest
+
+    # GITHUB_TOKEN needs write access to the contents to be able
+    # to enable auto-merge, and write access to pull requests to
+    # be able to approve the pull request and optionally apply labels.
+    permissions:
+      contents: write
+      pull-requests: write
 
     # Only run for pull requests created by accounts we are interested in
     # that might be used to create a pull request to update the .NET SDK.
@@ -117,7 +121,7 @@ jobs:
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
 
       # As long as it's not already approved, approve the pull request and enable auto-merge.
       # Our CI tests coupled with required statuses should ensure that the changes compile
