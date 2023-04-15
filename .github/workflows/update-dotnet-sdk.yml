@@ -24,6 +24,12 @@ on:
   # Also support running the workflow manually on-demand.
   workflow_dispatch:
 
+# Set the minumum permissions for GITHUB_TOKEN.
+# Use the commented-out additional permission if using GITHUB_TOKEN.
+permissions:
+  contents: read
+  #pull-requests: read
+
 jobs:
 
   update-dotnet-sdk:
@@ -33,6 +39,11 @@ jobs:
     # We don't want anyone forking this repository to also run this workflow
     if: ${{ github.event.repository.fork == false }}
 
+    # Set minimum required write permissions if using GITHUB_TOKEN.
+    #permissions:
+    #  contents: write
+    #  pull-requests: write
+
     steps:
 
     # Checkout the repository so the global.json file can be inspected and
@@ -41,7 +52,7 @@ jobs:
     # and that pushes as that user trigger any CI workflows that may trigger
     # on push, such as if any NuGet packages are updated after the PR is opened.
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       with:
         token: ${{ env.ACCESS_TOKEN }}
 
@@ -49,7 +60,7 @@ jobs:
     # for the same release channel as the SDK specified in global.json.
     - name: Update .NET SDK
       id: update-dotnet-sdk
-      uses: martincostello/update-dotnet-sdk@v2
+      uses: martincostello/update-dotnet-sdk@8d99db1db36692f0d5c5bf3ef91fb654c2d4e298 # v2.1.0
       with:
         labels: "dependencies,.NET"
         repo-token: ${{ env.ACCESS_TOKEN }}
@@ -60,7 +71,7 @@ jobs:
     # run the dotnet-outdated global tool to update any Microsoft-published
     # NuGet packages for that patch release of .NET to their latest versions too.
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
       if : ${{ steps.update-dotnet-sdk.outputs.sdk-updated == 'true' }}
 
     - name: Update NuGet packages
