@@ -1,0 +1,42 @@
+name: dependabot-approve
+
+on: pull_request_target
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
+
+    permissions:
+      pull-requests: write
+
+    steps:
+
+      - name: Get dependabot metadata
+        uses: dependabot/fetch-metadata@4de7a6c08ce727a42e0adbbdc345f761a01240ce # v1.3.6
+        id: dependabot-metadata
+
+      - name: Checkout code
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+
+      - name: Approve pull request and enable auto-merge
+        shell: bash
+        if: |
+          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/cache') ||
+          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/checkout') ||
+          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/dependency-review-action') ||
+          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/setup-dotnet') ||
+          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/setup-node') ||
+          contains(steps.dependabot-metadata.outputs.dependency-names, 'dependabot/fetch-metadata')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr checkout "$PR_URL"
+          if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ];
+          then gh pr review --approve "$PR_URL" && gh pr merge --auto --merge "$PR_URL"
+          fi
