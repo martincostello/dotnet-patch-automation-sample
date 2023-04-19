@@ -38,7 +38,7 @@ jobs:
     # See https://docs.github.com/en/actions/learn-github-actions/variables
     with:
       labels: "dependencies,.NET"
-      user-email: ${{ vars.GIT_COMMIT_USER_NAME }}
-      user-name: ${{ vars.GIT_COMMIT_USER_EMAIL }}
+      user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
+      user-name: ${{ vars.GIT_COMMIT_USER_NAME }}
     secrets:
       repo-token: ${{ secrets.ACCESS_TOKEN }}
