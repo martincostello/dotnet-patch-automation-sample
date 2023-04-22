@@ -36,6 +36,5 @@ jobs:
       user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
       user-name: ${{ vars.GIT_COMMIT_USER_NAME }}
     secrets:
-      #application-id: ${{ secrets.UPDATER_APPLICATION_ID }}
-      #application-private-key: ${{ secrets.UPDATER_APPLICATION_PRIVATE_KEY }}
-      repo-token: ${{ secrets.ACCESS_TOKEN }}
+      application-id: ${{ secrets.UPDATER_APPLICATION_ID }}
+      application-private-key: ${{ secrets.UPDATER_APPLICATION_PRIVATE_KEY }}
