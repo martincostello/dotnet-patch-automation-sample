@@ -6,32 +6,27 @@
 name: update-dotnet-sdk
 
 on:
+
   # Run at 2100 UTC on Tuesday every week to pick up any updates from
   # Patch Tuesday which occur on the second Tuesday of the month (PST).
   schedule:
     - cron:  '00 21 * * TUE'
+
   # Also support running the workflow manually on-demand.
   workflow_dispatch:
 
-# Set the minumum permissions for GITHUB_TOKEN.
-# Use the commented-out additional permission if using GITHUB_TOKEN.
+# Set the minumum permissions for GITHUB_TOKEN as we are using a GitHub application to perform the updates.
 permissions:
   contents: read
-  #pull-requests: read
 
 jobs:
 
   update-sdk:
 
-    uses: martincostello/update-dotnet-sdk/.github/workflows/update-dotnet-sdk.yml@593ff75f6495ce0cbbe6399ff0e3a9d0d94bae81 #v2.1.1
+    uses: martincostello/update-dotnet-sdk/.github/workflows/update-dotnet-sdk.yml@support-github-apps
 
-    # Set minimum required write permissions if using GITHUB_TOKEN.
-    #permissions:
-    #  contents: write
-    #  pull-requests: write
-
-    # Using a real user/email is recommended instead of using GITHUB_TOKEN, otherwise pull
-    # requests opened by this workflow, and commits pushed, will not queue your CI status checks.
+    # Using a real user/email or a GitHub app/bot is recommended instead of using GITHUB_TOKEN, otherwise
+    # pull requests opened by this workflow, and commits pushed, will not queue your CI status checks.
     # Similarly, the approve-and-merge workflow will also not run if GITHUB_TOKEN is used.
     # See https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
     # The Git commit user name and email are set as variables in the organization or repository settings.
@@ -41,4 +36,5 @@ jobs:
       user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
       user-name: ${{ vars.GIT_COMMIT_USER_NAME }}
     secrets:
-      repo-token: ${{ secrets.ACCESS_TOKEN }}
+      application-id: ${{ secrets.UPDATER_APPLICATION_ID }}
+      application-private-key: ${{ secrets.UPDATER_APPLICATION_PRIVATE_KEY }}
