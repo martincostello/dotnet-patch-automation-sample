@@ -1,6 +1,7 @@
 # .NET Patch Automation Sample
 
 [![Build status][build-badge]][build-status]
+[![OpenSSF Scorecard][ossf-badge]][ossf-scorecard]
 
 ## Introduction
 
@@ -244,6 +245,8 @@ This project is licensed under the [Apache 2.0][license] license.
 [global-json]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/global.json "This repository's global.json file"
 [issues]: https://github.com/martincostello/dotnet-patch-automation-sample/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
+[ossf-badge]: https://api.securityscorecards.dev/projects/github.com/martincostello/dotnet-patch-automation-sample/badge "Open Source Security Foundation (OSSF) Scorecard Badge"
+[ossf-scorecard]: https://api.securityscorecards.dev/projects/github.com/martincostello/dotnet-patch-automation-sample "Open Source Security Foundation (OSSF) Scorecard"
 [patch-tuesday-annoucements]: https://github.com/dotnet/announcements/labels/Patch-Tuesday "Announcements labelled Patch-Tuesday"
 [patch-tuesday-cves]: https://github.com/dotnet/announcements/labels/Security "Announcements labelled Security"
 [repository]: https://github.com/martincostello/dotnet-patch-automation-sample "This project on GitHub.com"
