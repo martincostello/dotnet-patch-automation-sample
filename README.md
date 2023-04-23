@@ -1,6 +1,6 @@
 # .NET Patch Automation Sample
 
-[![Build status](https://github.com/martincostello/dotnet-patch-automation-sample/workflows/build/badge.svg?branch=main&event=push)](https://github.com/martincostello/dotnet-patch-automation-sample/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush)
+[![Build status][build-badge]][build-status]
 
 ## Introduction
 
@@ -18,64 +18,170 @@ patch .NET applications on a monthly basis with minimal manual effort. :rocket:
 
 ## How it Works
 
-> :warning: Coming soon. 🚧
+This repository contains a [GitHub Actions workflow][update-workflow] that uses a reusable
+workflow from the [martincostello/update-dotnet-sdk][update-dotnet-sdk-workflow] repository.
+This workflow uses the [update-dotnet-sdk][update-dotnet-sdk] GitHub Action to check for updates
+to the .NET SDK compared to the version specified in the [`global.json` file][global-json] that
+is checked into this repository.
 
-The ASP.NET Core application used to demonstrate the automation process is based on the
-Todo App sample from my [_Integration Testing ASP.NET Core Minimal APIs_][dotnet-minimal-api-integration-testing] repository.
+If an update is available, the workflow will also check for any Microsoft-published NuGet packages
+that are eligible to be updated as part of the same release of the .NET SDK and update those too.
 
-## Debugging
+If an update to the .NET SDK was found, the workflow will create a pull request with the changes
+targeting the default branch of the repository. This repository's continuous integration will
+then run against the pull request to ensure that the changes do not break the application.
 
-To debug the application locally outside of the integration tests, you will need
-to [create a GitHub OAuth app][create-github-oauth-app] to obtain secrets for the
-`GitHub:ClientId` and `GitHub:ClientSecret` options so that the [OAuth user authentication][user-oauth]
-works and you can log into the Todo App UI.
+The changes and pull request are performed on behalf of a [GitHub App][github-apps]. A GitHub app
+is used to allow the workflow to create pull requests on behalf of the application, rather than
+act as a specific user. The GitHub app's private key is used to [generate a GitHub access token][workflow-application-token-action]
+to use to authenticate with the GitHub repository. This is used instead of `GITHUB_TOKEN` to overcome
+[restrictions to triggering other workflows][github-token-restrictions] which would otherwise
+prevent the GitHub Actions [continuous integration][continuous-integration] from running as part of pull requests.
 
-> 💡 When creating the GitHub OAuth app, use `https://localhost:5001/sign-in-github`
-as the _Authorization callback URL_.
->
-> ⚠️ Do not commit GitHub OAuth secrets to source control. Configure them
-with [User Secrets][user-secrets] instead.
+When the pull request is opened, a [second workflow][approve-and-merge-workflow] will run to verify
+whether the pull request contains the changes that are expected from such an update, such as the
+account it was raised from and what was changed as part of the pull request. If the changes are
+those which are expected, then the pull request will be approved and auto-merge will be enabled.
 
-## Building and Testing
+Assuming that the CI build passes, the pull request will then be merged automatically, completing
+the patch updates.
 
-Compiling the application yourself requires Git and the
-[.NET SDK](https://www.microsoft.com/net/download/core "Download the .NET SDK")
-to be installed (version `7.0.200` or later).
+More information about the reusable workflow can be found [here][update-workflow-docs].
 
-To build and test the application locally from a terminal/command-line, run the
-following set of commands:
+> The ASP.NET Core application used to demonstrate the automation process is based on the
+> Todo App sample from my [_Integration Testing ASP.NET Core Minimal APIs_][dotnet-minimal-api-integration-testing] repository.
 
-```powershell
-git clone https://github.com/martincostello/dotnet-patch-automation-sample.git
-cd dotnet-patch-automation-sample
-./build.ps1
+### Updating the .NET SDK
+
+The [martincostello/update-dotnet-sdk][update-dotnet-sdk] GitHub Action is used to check for and
+apply updates to the .NET SDK. This action uses the [.NET release notes][dotnet-release-notes] JSON
+files in the [dotnet/core][dotnet-core] repository to determine the latest version of the .NET SDK
+compared to the version in the `global.json` file of a repository. For example, the releases for
+.NET 6 can be found in the [`release-notes/6.0/releases.json` file][dotnet-releases-json-60].
+
+If an update is available, the action will update the the `global.json` file to use the latest
+version of the .NET SDK that is available for that release channel (6.0, 7.0 etc.) and then open
+a pull request with the changes.
+
+### Updating NuGet packages
+
+If an update to the .NET SDK is made, the workflow will also check for any Microsoft-published NuGet
+packages that were made available as part of the same release of the .NET SDK. For example, new
+versions of the `Microsoft.AspNetCore.*` packages are published for each new .NET patch release.
+
+By default, only packages with the following ID prefixes are updated as part of these checks:
+
+- `Microsoft.AspNetCore.`
+- `Microsoft.EntityFrameworkCore.`
+- `Microsoft.Extensions.`
+- `System.Text.Json`
+
+These package updates are checked for and applied by the [dotnet-outdated][dotnet-outdated-github]
+.NET global tool. More information about dotnet-outdated can be found [here][dotnet-outdated-hanselman].
+
+The package updates are constrained to the same release channel as the existing package references
+in the application already use. For example, if .NET 6 packages are used, the only patch updates for
+the `6.0.x` NuGet packages will be applied; any package updates for .NET 7 (or later) are ignored.
+
+### Approving and Merging Pull Requests
+
+Once the pull request for any updates is opened, [another GitHub workflow][approve-and-merge-workflow]
+will run to verify that that changes included in that pull request match the expected changes for a
+.NET SDK update.
+
+This workflow only runs when the pull request is opened by the same account that is configured for
+the GitHub app that is used to apply the .NET SDK updates. This is to prevent the workflow from
+running against pull requests created by any other GitHub user.
+
+Both of the tools used to apply the Git commits write their commit messages in the same format as
+[Dependabot][dependabot] does, by including some machine-readable YAML in the commit message. This
+block of YAML includes the names of each package that is updated, as well as the [SemVer][semver-2]
+major/minor/patch update type for each package. This based on the approach used by the
+[dependabot/fetch-metadata][fetch-metadata] action that can be used to auto-approve Dependabot updates.
+
+For example, here is an example of the commit message for a commit that updates the .NET SDK:
+
+```text
+Update .NET SDK
+Update .NET SDK to version 7.0.203.
+
+---
+updated-dependencies:
+- dependency-name: Microsoft.NET.Sdk
+  dependency-type: direct:production
+  update-type: version-update:semver-patch
+...
 ```
+
+The workflow parses this information to check for which packages were updated. If the packages that
+were updated all match the list of allowed prefixes, all of the commits were authored by the
+GitHub user that opened the pull request, and all of the updates are only for a patch release, then
+the workflow determines that the pull request is _"trusted"_ and is safe to approve and merge.
+
+If the changes are as expected, then the workflow will approve the pull request and enable auto-merge.
+Assuming that the continuous integration succeeds, which is used as a measure of quality and stability
+of the changes in the pull request, then the pull request will be merged to the default branch automatically
+with no human intervention required.
+
+If any of the required status checks fail, then the pull request will be left in a pending state for
+a human to review and determine the appropriate course of action to take.
+
+If any unexpected changes are present in the pull request, then the pull request will not be approved
+and auto-merge will not be enabled. If these changes were introduced after the pull request was already
+approved, then the review will be dismissed and auto-merge will be disabled.
+
+### Examples
+
+#### Pull Requests
+
+Below are links to example pull requests demonstrating different behaviours of the workflows.
+
+- [Approving a pull request raised by a GitHub app][approved-and-merged-bot]
+- [Approving a pull request raised by a GitHub user][approved-and-merged-pat]
+- [Dismissing approval when other changes are detected][approval-dismissed]
+
+#### Workflows
+
+Further examples of workflows for updating the .NET SDK with different types of GitHub credentials
+can be found [in the README of the update-dotnet-sdk action][update-workflow-docs].
 
 ## Feedback
 
-Any feedback or issues can be added to the issues for this project in
-[GitHub](https://github.com/martincostello/dotnet-patch-automation-sample/issues "Issues for this project on GitHub.com").
+Any feedback or issues can be added to the issues for this project in [GitHub][issues].
 
 ## Repository
 
-The repository is hosted in
-[GitHub](https://github.com/martincostello/dotnet-patch-automation-sample "This project on GitHub.com"):
-<https://github.com/martincostello/dotnet-patch-automation-sample.git>
+The repository is hosted in [GitHub][repository]: <https://github.com/martincostello/dotnet-patch-automation-sample.git>
 
 ## License
 
-This project is licensed under the
-[Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license")
-license.
+This project is licensed under the [Apache 2.0][license] license.
 
-[approval-dismissed]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/36
-[approved-and-merged]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/37
-[create-github-oauth-app]: https://docs.github.com/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app
-[dotnet-minimal-api-integration-testing]: https://github.com/martincostello/dotnet-minimal-api-integration-testing
-[dotnet-outdated-github]: https://github.com/dotnet-outdated/dotnet-outdated
-[dotnet-outdated-hanselman]: https://www.hanselman.com/blog/dotnet-outdated-helps-you-keep-your-projects-up-to-date
-[fetch-metadata]: https://github.com/marketplace/actions/fetch-metadata-from-dependabot-prs
-[github-actions]: https://github.com/features/actions
-[update-net-sdk]: https://github.com/marketplace/actions/update-net-sdk
-[user-oauth]: https://docs.microsoft.com/aspnet/core/security/authentication/social/
-[user-secrets]: https://docs.microsoft.com/aspnet/core/security/app-secrets
+[approval-dismissed]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/36 "Dismissed pull request"
+[approve-and-merge-workflow]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/.github/workflows/approve-and-merge.yml "approve-and-merge workflow"
+[approved-and-merged-bot]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/80 "Approved pull request created by a GitHub app"
+[approved-and-merged-pat]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/37 "Approved pull request created by a GitHub user"
+[build-badge]: https://github.com/martincostello/dotnet-patch-automation-sample/workflows/build/badge.svg?branch=main&event=push
+[build-status]: https://github.com/martincostello/dotnet-patch-automation-sample/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush
+[continuous-integration]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/.github/workflows/build.yml "The continuous integration workflow to build and test the application"
+[dependabot]: https://docs.github.com/code-security/dependabot/dependabot-version-updates/about-dependabot-version-updates "About Dependabot version updates"
+[dotnet-core]: https://github.com/dotnet/core "The .NET Core repository"
+[dotnet-minimal-api-integration-testing]: https://github.com/martincostello/dotnet-minimal-api-integration-testing "The martincostello/dotnet-minimal-api-integration-testing repository"
+[dotnet-outdated-github]: https://github.com/dotnet-outdated/dotnet-outdated "The .NET Outdated repository"
+[dotnet-outdated-hanselman]: https://www.hanselman.com/blog/dotnet-outdated-helps-you-keep-your-projects-up-to-date "dotnet outdated helps you keep your projects up to date"
+[dotnet-release-notes]: https://github.com/dotnet/core/tree/main/release-notes ".NET release notes"
+[dotnet-releases-json-60]: https://github.com/dotnet/core/blob/main/release-notes/6.0/releases.json ".NET 6 release notes JSON"
+[fetch-metadata]: https://github.com/marketplace/actions/fetch-metadata-from-dependabot-prs "The Fetch Metadata from Dependabot PRs GitHub Action"
+[github-actions]: https://github.com/features/actions "GitHub Actions documentation"
+[github-apps]: https://docs.github.com/apps/creating-github-apps/creating-github-apps/about-apps "About GitHub apps"
+[github-token-restrictions]: https://docs.github.com/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow "Triggering a workflow from a workflow"
+[global-json]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/global.json "This repository's global.json file"
+[issues]: https://github.com/martincostello/dotnet-patch-automation-sample/issues "Issues for this project on GitHub.com"
+[license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
+[repository]: https://github.com/martincostello/dotnet-patch-automation-sample "This project on GitHub.com"
+[semver-2]: https://semver.org/ "Semantic Versioning 2.0.0"
+[update-dotnet-sdk]: https://github.com/marketplace/actions/update-net-sdk "The Update .NET SDK GitHub Action"
+[update-dotnet-sdk-workflow]: https://github.com/martincostello/update-dotnet-sdk/blob/main/.github/workflows/update-dotnet-sdk.yml "The update-dotnet-sdk reusable workflow"
+[update-workflow]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/.github/workflows/update-dotnet-sdk.yml "The update-dotnet-sdk workflow for this repository"
+[update-workflow-docs]: https://github.com/martincostello/update-dotnet-sdk#advanced-workflow "The documentation for the update-dotnet-sdk reusable workflow"
+[workflow-application-token-action]: https://github.com/marketplace/actions/workflow-application-token-action "The workflow-application-token-action GitHub action"
