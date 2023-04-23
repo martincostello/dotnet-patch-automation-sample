@@ -157,13 +157,13 @@ If any unexpected changes are present in the pull request, then the pull request
 and auto-merge will not be enabled. If these changes were introduced after the pull request was already
 approved, then the review will be dismissed and auto-merge will be disabled.
 
-#### Further Considerations
+### Further Considerations
 
 The workflow in this sample is designed to be as safe as possible while being easy to set up, but
 there are some aspects that are not covered by the workflow in the aim of simplicity that you may
 want to consider before adopting this approach for your applications.
 
-##### Branch Protections
+#### Branch Protections
 
 This sample repository is set up with the following branch protections for the default branch:
 
@@ -184,7 +184,7 @@ be excessive to configure.
 The accounts used to open the pull requests and approve the pull requests must be different accounts
 as GitHub does not allow an account to approve its own pull request.
 
-##### Deployment tests
+#### Deployment tests
 
 If you practice continuous deployment, then you may want to consider adding tests as part of your
 deployment process to ensure that the application is still working as expected after the pull request
