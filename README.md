@@ -18,20 +18,21 @@ patch .NET applications on a monthly basis with minimal manual effort. :rocket:
 
 ## The Problem
 
-[Previously][dotnet-updates-annoucement], Microsoft did not make automatic updates to
-.NET available through Windows Update. Although this has been available
-[since April 2022][dotnet-updates-available], it is still not enabled by default and only
-applies to Windows .NET applications which rely on .NET being installed on the machine.
+Previously, [Microsoft did not make automatic updates to .NET available through Windows Update][dotnet-updates-annoucement].
+Although this has been available [since April 2022][dotnet-updates-available], it is still
+not enabled by default and only applies to Windows .NET applications which rely on .NET
+being installed on the machine.
 
-For self-contained deployments and applications deployed to any other operating system,
-there is still no mechanism for applying .NET patches automatically. This requires developers
-to update their applications month-to-month to ensure they stay secure ([and supported][dotnet-support-policy]).
+For self-contained deployments and applications deployed to any other operating system, such
+as Linux, there is still no mechanism for applying .NET patches automatically. This requires
+developers to update their applications month-to-month to ensure they stay secure
+([and supported][dotnet-support-policy]).
 
-Updates are announced in the [dotnet/announcements][patch-tuesday-annoucements] repository,
+New updates are announced in the [dotnet/announcements][patch-tuesday-annoucements] repository,
 as well as any individual [CVEs][patch-tuesday-cves] that apply. Developers need to check
 these announcements on a regular cadence to ensure they are aware of any updates that are
 available that need to be applied to the applications they maintain. In a distrubuted software
-architecture, this can potentially be a significant number of applications of work.
+architecture, this can potentially be a significant number of applications to update.
 
 This maintenance burden eats into the time developers have to work on new features and
 other changes that bring meaningful value to their applications and their businesses.
@@ -39,13 +40,13 @@ other changes that bring meaningful value to their applications and their busine
 By tapping into the machine-readable [.NET release notes][dotnet-release-notes] and harnessing
 the power of [GitHub Actions][github-actions], we can automate the process of updating
 applications whose code is stored in GitHub to remove much of the manual burden of keeping
-multiple applications up-to-date.
+applications patched and up-to-date.
 
 ## How it Works
 
-This repository contains a [GitHub Actions workflow][update-workflow] that uses a reusable
-workflow from the [martincostello/update-dotnet-sdk][update-dotnet-sdk-workflow] repository.
-This workflow uses the [update-dotnet-sdk][update-dotnet-sdk] GitHub Action to check for updates
+This repository contains a [GitHub Actions workflow][update-workflow] that uses a GitHub Actions
+reusable workflow from the [martincostello/update-dotnet-sdk][update-dotnet-sdk-workflow] repository.
+This workflow uses the [Update .NET SDK][update-dotnet-sdk] GitHub Action to check for updates
 to the .NET SDK compared to the version specified in the [`global.json` file][global-json] that
 is checked into this repository.
 
@@ -104,8 +105,8 @@ By default, only packages with the following ID prefixes are updated as part of 
 These package updates are checked for and applied by the [dotnet-outdated][dotnet-outdated-github]
 .NET global tool. More information about dotnet-outdated can be found [here][dotnet-outdated-hanselman].
 
-The package updates are constrained to the same release channel as the existing package references
-in the application already use. For example, if .NET 6 packages are used, the only patch updates for
+The package updates are constrained to the same release channel as the NuGet package references in
+the application already used. For example, if .NET 6 packages are used, then only patch updates for
 the `6.0.x` NuGet packages will be applied; any package updates for .NET 7 (or later) are ignored.
 
 ### Approving and Merging Pull Requests
@@ -121,10 +122,11 @@ running against pull requests created by any other GitHub user.
 Both of the tools used to apply the Git commits write their commit messages in the same format as
 [Dependabot][dependabot] does, by including some machine-readable YAML in the commit message. This
 block of YAML includes the names of each package that is updated, as well as the [SemVer][semver-2]
-major/minor/patch update type for each package. This based on the approach used by the
-[dependabot/fetch-metadata][fetch-metadata] action that can be used to auto-approve Dependabot updates.
+major/minor/patch update type for each package. This is based on the approach used by the
+[Fetch Metadata from Dependabot PRs][fetch-metadata] GitHub action that can be used to auto-approve
+Dependabot updates.
 
-For example, here is an example of the commit message for a commit that updates the .NET SDK:
+For example, here is the message for a commit that updates the .NET SDK to version `7.0.203`:
 
 ```text
 Update .NET SDK
@@ -206,8 +208,8 @@ This project is licensed under the [Apache 2.0][license] license.
 [global-json]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/global.json "This repository's global.json file"
 [issues]: https://github.com/martincostello/dotnet-patch-automation-sample/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
-[patch-tuesday-annoucements]: https://github.com/dotnet/announcements/labels/Patch-Tuesday
-[patch-tuesday-cves]: https://github.com/dotnet/announcements/labels/Security
+[patch-tuesday-annoucements]: https://github.com/dotnet/announcements/labels/Patch-Tuesday "Announcements labelled Patch-Tuesday"
+[patch-tuesday-cves]: https://github.com/dotnet/announcements/labels/Security "Announcements labelled Security"
 [repository]: https://github.com/martincostello/dotnet-patch-automation-sample "This project on GitHub.com"
 [semver-2]: https://semver.org/ "Semantic Versioning 2.0.0"
 [update-dotnet-sdk]: https://github.com/marketplace/actions/update-net-sdk "The Update .NET SDK GitHub Action"
