@@ -22,6 +22,9 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  APPROVER_LOGIN: "dependabot[bot]"
+
 permissions:
   contents: read
   pull-requests: read
@@ -50,6 +53,9 @@ jobs:
     - name: Check which dependencies were updated
       id: check-dependencies
       env:
+        # This list of trusted package prefixes needs to stay in sync with the list of package prefixes used by the update-dotnet-sdk workflow.
+        # See https://github.com/martincostello/update-dotnet-sdk/blob/131cefcd75229c796aee0044a6ceb2a2e0d39f9a/.github/workflows/update-dotnet-sdk.yml#L36-L40.
+        INCLUDE_NUGET_PACKAGES: "Microsoft.AspNetCore.,Microsoft.EntityFrameworkCore.,Microsoft.Extensions.,System.Text.Json"
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: pwsh
       run: |
@@ -98,25 +104,21 @@ jobs:
         # Did we find at least one dependency?
         $isPatch = $dependencies.Length -gt 0
         $onlyTrusted = $dependencies.Length -gt 0
+        $trustedPackages = $env:INCLUDE_NUGET_PACKAGES.Split(',')
 
         foreach ($dependency in $dependencies) {
           $isPatch = $isPatch -And $dependency.Type -eq "version-update:semver-patch"
           $onlyTrusted = $onlyTrusted -And
             (
               ($dependency.Name -eq "Microsoft.NET.Sdk") -Or
-              # This list of trusted package prefixes needs to stay in sync with the
-              # list of package prefixes passed to dotnet-outdated in the other workflow.
-              $dependency.Name.StartsWith('Microsoft.AspNetCore.') -Or
-              $dependency.Name.StartsWith('Microsoft.EntityFrameworkCore.') -Or
-              $dependency.Name.StartsWith('Microsoft.Extensions.') -Or
-              $dependency.Name.StartsWith('System.')
+              (($trustedPackages | Where-Object { $dependency.Name.StartsWith($_) }).Count -gt 0)
             )
         }
 
         # We only trust the pull request to approve and auto-merge it
         # if it only contains commits which change the .NET SDK and
-        # Microsoft-published NuGet packages that were made by the user
-        # we expect to make those changes in the other workflow.
+        # Microsoft-published NuGet packages that were made by the GitHub
+        # login we expect to make those changes in the other workflow.
         $isTrusted = (($onlyTrusted -And $isPatch) -And $onlyChangesFromUser) -And $onlyDependencyUpdates
         "is-trusted-update=$isTrusted" >> $env:GITHUB_OUTPUT
 
@@ -136,7 +138,7 @@ jobs:
       shell: pwsh
       run: |
         $approvals = gh api /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews | ConvertFrom-Json
-        $approvals = $approvals | Where-Object { $_.user.login -eq "github-actions[bot]" }
+        $approvals = $approvals | Where-Object { $_.user.login -eq $env:APPROVER_LOGIN }
         $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
         if ($approvals.Length -eq 0) {
@@ -161,7 +163,7 @@ jobs:
       shell: pwsh
       run: |
         $approvals = gh api /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews | ConvertFrom-Json
-        $approvals = $approvals | Where-Object { $_.user.login -eq "github-actions[bot]" }
+        $approvals = $approvals | Where-Object { $_.user.login -eq $env:APPROVER_LOGIN }
         $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
         if ($approvals.Length -gt 0) {
