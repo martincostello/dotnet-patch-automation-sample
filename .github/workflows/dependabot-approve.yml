@@ -4,21 +4,25 @@ on: pull_request_target
 
 permissions:
   contents: read
-  pull-requests: read
 
 jobs:
   dependabot:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
 
-    permissions:
-      pull-requests: write
-
     steps:
 
       - name: Get dependabot metadata
         uses: dependabot/fetch-metadata@4de7a6c08ce727a42e0adbbdc345f761a01240ce # v1.3.6
         id: dependabot-metadata
+
+      - name: Generate GitHub application token
+        id: generate-application-token
+        uses: peter-murray/workflow-application-token-action@8e1ba3bf1619726336414f1014e37f17fbadf1db # v2.1.0
+        with:
+          application_id: ${{ secrets.REVIEWER_APPLICATION_ID }}
+          application_private_key: ${{ secrets.REVIEWER_APPLICATION_PRIVATE_KEY }}
+          permissions: "contents:write, pull_requests:write"
 
       - name: Checkout code
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
@@ -33,7 +37,7 @@ jobs:
           contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/setup-node') ||
           contains(steps.dependabot-metadata.outputs.dependency-names, 'dependabot/fetch-metadata')
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.generate-application-token.outputs.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
           gh pr checkout "$PR_URL"
