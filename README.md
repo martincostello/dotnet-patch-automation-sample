@@ -103,6 +103,9 @@ By default, only packages with the following ID prefixes are updated as part of 
 - `Microsoft.Extensions.`
 - `System.Text.Json`
 
+The list of packages that are updated can be changed by specifiying them as a comma-separated list
+via the `include-nuget-packages` input parameter to the GitHub Actions workflow.
+
 These package updates are checked for and applied by the [dotnet-outdated][dotnet-outdated-github]
 .NET global tool. More information about dotnet-outdated can be found [here][dotnet-outdated-hanselman].
 
