@@ -16,6 +16,31 @@ This sample repository demonstrates how we can use the flexibility of [GitHub Ac
 together with tools such as [dotnet-outdated][dotnet-outdated-github] to automatically
 patch .NET applications on a monthly basis with minimal manual effort. :rocket:
 
+## The Problem
+
+[Previously][dotnet-updates-annoucement], Microsoft did not make automatic updates to
+.NET available through Windows Update. Although this has been available
+[since April 2022][dotnet-updates-available], it is still not enabled by default and only
+applies to Windows .NET applications which rely on .NET being installed on the machine.
+
+For self-contained deployments and applications deployed to any other operating system,
+there is still no mechanism for applying .NET patches automatically. This requires developers
+to update their applications month-to-month to ensure they stay secure ([and supported][dotnet-support-policy]).
+
+Updates are announced in the [dotnet/announcements][patch-tuesday-annoucements] repository,
+as well as any individual [CVEs][patch-tuesday-cves] that apply. Developers need to check
+these announcements on a regular cadence to ensure they are aware of any updates that are
+available that need to be applied to the applications they maintain. In a distrubuted software
+architecture, this can potentially be a significant number of applications of work.
+
+This maintenance burden eats into the time developers have to work on new features and
+other changes that bring meaningful value to their applications and their businesses.
+
+By tapping into the machine-readable [.NET release notes][dotnet-release-notes] and harnessing
+the power of [GitHub Actions][github-actions], we can automate the process of updating
+applications whose code is stored in GitHub to remove much of the manual burden of keeping
+multiple applications up-to-date.
+
 ## How it Works
 
 This repository contains a [GitHub Actions workflow][update-workflow] that uses a reusable
@@ -171,6 +196,9 @@ This project is licensed under the [Apache 2.0][license] license.
 [dotnet-outdated-hanselman]: https://www.hanselman.com/blog/dotnet-outdated-helps-you-keep-your-projects-up-to-date "dotnet outdated helps you keep your projects up to date"
 [dotnet-release-notes]: https://github.com/dotnet/core/tree/main/release-notes ".NET release notes"
 [dotnet-releases-json-60]: https://github.com/dotnet/core/blob/main/release-notes/6.0/releases.json ".NET 6 release notes JSON"
+[dotnet-support-policy]: https://dotnet.microsoft.com/platform/support/policy/dotnet-core ".NET and .NET Core Support Policy"
+[dotnet-updates-annoucement]: https://devblogs.microsoft.com/dotnet/net-core-updates-coming-to-microsoft-update/ ".NET Core 2.1, 3.1, and .NET 5.0 updates are coming to Microsoft Update"
+[dotnet-updates-available]: https://devblogs.microsoft.com/dotnet/server-operating-systems-auto-updates/ ".NET Automatic Updates for Server Operating Systems"
 [fetch-metadata]: https://github.com/marketplace/actions/fetch-metadata-from-dependabot-prs "The Fetch Metadata from Dependabot PRs GitHub Action"
 [github-actions]: https://github.com/features/actions "GitHub Actions documentation"
 [github-apps]: https://docs.github.com/apps/creating-github-apps/creating-github-apps/about-apps "About GitHub apps"
@@ -178,6 +206,8 @@ This project is licensed under the [Apache 2.0][license] license.
 [global-json]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/global.json "This repository's global.json file"
 [issues]: https://github.com/martincostello/dotnet-patch-automation-sample/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
+[patch-tuesday-annoucements]: https://github.com/dotnet/announcements/labels/Patch-Tuesday
+[patch-tuesday-cves]: https://github.com/dotnet/announcements/labels/Security
 [repository]: https://github.com/martincostello/dotnet-patch-automation-sample "This project on GitHub.com"
 [semver-2]: https://semver.org/ "Semantic Versioning 2.0.0"
 [update-dotnet-sdk]: https://github.com/marketplace/actions/update-net-sdk "The Update .NET SDK GitHub Action"
