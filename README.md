@@ -157,6 +157,41 @@ If any unexpected changes are present in the pull request, then the pull request
 and auto-merge will not be enabled. If these changes were introduced after the pull request was already
 approved, then the review will be dismissed and auto-merge will be disabled.
 
+#### Further Considerations
+
+The workflow in this sample is designed to be as safe as possible while being easy to set up, but
+there are some aspects that are not covered by the workflow in the aim of simplicity that you may
+want to consider before adopting this approach for your applications.
+
+##### Branch Protections
+
+This sample repository is set up with the following branch protections for the default branch:
+
+- A pull request us required before merging
+- Status checks must pass before merging
+- No accounts are allowed to bypass the branch protections
+
+These requirements protect the default branch from having the automated patches from being merged
+in without them being validated as not breaking the application and having a "second pair of eyes"
+review the changes on the pull request by a second GitHub account/app.
+
+In order for the pull requests to be auto-merged, the number of required reviewers cannot be more
+than one and [code owner][code-owners] review cannot be required. This is because GitHub apps cannot
+be made code owners of a repository, and requiring more than one reviewer would still require a human
+to approve the pull request. This could be overcome with multiple appoval bots, but that would likely
+be excessive to configure.
+
+The accounts used to open the pull requests and approve the pull requests must be different accounts
+as GitHub does not allow an account to approve its own pull request.
+
+##### Deployment tests
+
+If you practice continuous deployment, then you may want to consider adding tests as part of your
+deployment process to ensure that the application is still working as expected after the pull request
+has been merged to your default branch. This helps validate that the changes in the pull request do
+not break the application for any functionality that is not exercised by your continuous integration's
+tests and that the changes are safe to deploy into your production environment.
+
 ### Examples
 
 #### Pull Requests
@@ -190,6 +225,7 @@ This project is licensed under the [Apache 2.0][license] license.
 [approved-and-merged-pat]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/37 "Approved pull request created by a GitHub user"
 [build-badge]: https://github.com/martincostello/dotnet-patch-automation-sample/workflows/build/badge.svg?branch=main&event=push
 [build-status]: https://github.com/martincostello/dotnet-patch-automation-sample/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush
+[code-owners]: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners "About code owners"
 [continuous-integration]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/.github/workflows/build.yml "The continuous integration workflow to build and test the application"
 [dependabot]: https://docs.github.com/code-security/dependabot/dependabot-version-updates/about-dependabot-version-updates "About Dependabot version updates"
 [dotnet-core]: https://github.com/dotnet/core "The .NET Core repository"
