@@ -43,3 +43,14 @@ jobs:
     secrets:
       application-id: ${{ secrets.UPDATER_APPLICATION_ID }}
       application-private-key: ${{ secrets.UPDATER_APPLICATION_PRIVATE_KEY }}
+
+  add-security-label:
+    name: Add security label
+    needs: update-sdk
+    runs-on: ubuntu-latest
+    if : |
+      needs.update-sdk.outputs.sdk-updated =='true' &&
+      needs.update-sdk.outputs.security == 'true'
+    steps:
+    - name: Add security label
+      run: gh pr edit "${{ needs.update-sdk.outputs.pull-request-html-url }}" --add-label security
