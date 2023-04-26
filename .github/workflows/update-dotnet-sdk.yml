@@ -35,7 +35,7 @@ permissions:
 # echo "Git user email: $(gh api "/users/${app_name}[bot]" --jq ".id")+${app_name}[bot]@users.noreply.github.com"
 jobs:
   update-sdk:
-    uses: martincostello/update-dotnet-sdk/.github/workflows/update-dotnet-sdk.yml@9881bbf5533bad92df886e6eb988e072a5612b12 # v2.1.4
+    uses: martincostello/update-dotnet-sdk/.github/workflows/update-dotnet-sdk.yml@bba9c5d796cf9e84046ae0cb42f7dd33bde568f3 # v2.1.4
     with:
       labels: "dependencies,.NET"
       user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
