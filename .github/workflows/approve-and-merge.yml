@@ -34,7 +34,7 @@ jobs:
 
     # Only run for pull requests created by accounts we are interested in
     # that might be used to create a pull request to update the .NET SDK.
-    if: ${{ github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME }}
+    if: ${{ github.event.repository.fork == false && github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME }}
 
     steps:
 
