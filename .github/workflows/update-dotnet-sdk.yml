@@ -9,6 +9,10 @@ on:
 
   # Run at 2100 UTC on Tuesday every week to pick up any updates from
   # Patch Tuesday which occur on the second Tuesday of the month (PST).
+  # If you apply this workflow to multiple repositories, you may wish
+  # to offset the schedule for each repository by an appropriate amount
+  # to avoid your applications having their updates deployed simultaneously
+  # if you practice continuous deployment without manual approval/gating.
   schedule:
     - cron:  '00 21 * * TUE'
 
