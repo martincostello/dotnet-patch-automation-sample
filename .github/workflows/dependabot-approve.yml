@@ -22,7 +22,7 @@ jobs:
         with:
           application_id: ${{ secrets.REVIEWER_APPLICATION_ID }}
           application_private_key: ${{ secrets.REVIEWER_APPLICATION_PRIVATE_KEY }}
-          permissions: "contents:write, pull_requests:write"
+          permissions: "contents:write, pull_requests:write, workflows:write"
 
       - name: Checkout code
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
