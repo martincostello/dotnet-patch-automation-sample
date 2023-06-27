@@ -122,7 +122,9 @@ public class UITests : IAsyncLifetime
 
     private static void InstallPlaywright()
     {
+#pragma warning disable CA1861
         int exitCode = Microsoft.Playwright.Program.Main(new[] { "install" });
+#pragma warning restore CA1861
 
         if (exitCode != 0)
         {
