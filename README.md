@@ -87,7 +87,7 @@ compared to the version in the `global.json` file of a repository. For example, 
 .NET 6 can be found in the [`release-notes/6.0/releases.json` file][dotnet-releases-json-60].
 
 If an update is available, the action will update the the `global.json` file to use the latest
-version of the .NET SDK that is available for that release channel (6.0, 7.0 etc.) and then open
+version of the .NET SDK that is available for that release channel (6.0, 7.0, 8.0 etc.) and then open
 a pull request with the changes.
 
 ### Updating NuGet packages
