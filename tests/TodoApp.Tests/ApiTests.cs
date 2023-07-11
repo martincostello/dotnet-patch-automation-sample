@@ -120,7 +120,7 @@ public class ApiTests
         problem.Status.ShouldBe(StatusCodes.Status404NotFound);
         problem.Title.ShouldBe("Not Found");
         problem.Detail.ShouldBe("Item not found.");
-        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc7231#section-6.5.4");
+        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc9110#section-15.5.5");
         problem.Instance.ShouldBeNull();
     }
 
@@ -143,7 +143,7 @@ public class ApiTests
         problem.Status.ShouldBe(StatusCodes.Status400BadRequest);
         problem.Title.ShouldBe("Bad Request");
         problem.Detail.ShouldBe("No item text specified.");
-        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc7231#section-6.5.1");
+        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc9110#section-15.5.1");
         problem.Instance.ShouldBeNull();
     }
 
@@ -175,7 +175,7 @@ public class ApiTests
         problem.Status.ShouldBe(StatusCodes.Status400BadRequest);
         problem.Title.ShouldBe("Bad Request");
         problem.Detail.ShouldBe("Item already completed.");
-        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc7231#section-6.5.1");
+        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc9110#section-15.5.1");
         problem.Instance.ShouldBeNull();
     }
 
@@ -207,7 +207,7 @@ public class ApiTests
         problem.Status.ShouldBe(StatusCodes.Status404NotFound);
         problem.Title.ShouldBe("Not Found");
         problem.Detail.ShouldBe("Item not found.");
-        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc7231#section-6.5.4");
+        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc9110#section-15.5.5");
         problem.Instance.ShouldBeNull();
     }
 
@@ -239,7 +239,7 @@ public class ApiTests
         problem.Status.ShouldBe(StatusCodes.Status404NotFound);
         problem.Title.ShouldBe("Not Found");
         problem.Detail.ShouldBe("Item not found.");
-        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc7231#section-6.5.4");
+        problem.Type.ShouldBe("https://tools.ietf.org/html/rfc9110#section-15.5.5");
         problem.Instance.ShouldBeNull();
     }
 
