@@ -33,7 +33,7 @@ permissions:
 #
 # You can obtain the user name and email for the GitHub app by running the following command using the
 # GitHub CLI (https://cli.github.com/) in a terminal and substituting the values as shown below.
-# If you're using GitHub Enterprise Server that the domain will be different and will need substituting.
+# If you're using GitHub Enterprise Server then the domain will be different and will need substituting.
 #
 # app_name="YOUR_GITHUB_APP_NAME"
 # echo "Git user name: ${app_name}[bot]"
