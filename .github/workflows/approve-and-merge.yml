@@ -20,7 +20,10 @@ name: approve-and-merge
 
 on:
   pull_request:
-    branches: [ main, dotnet-vnext ]
+    branches:
+      - main
+      - dotnet-vnext
+      - dotnet-nightly
 
 env:
   REVIEWER_LOGIN: "dotnet-patch-automation-reviewer[bot]"
