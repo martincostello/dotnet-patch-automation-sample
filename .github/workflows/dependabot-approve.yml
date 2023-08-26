@@ -29,17 +29,22 @@ jobs:
 
       - name: Approve pull request and enable auto-merge
         shell: bash
+        # Only approve pull requests if there is only exactly one dependency, and it is only of those listed below.
+        # If using grouped Dependabot updates, then you will need to update this condition to verify that all of
+        # the dependencies that were updated are ones that are trusted. Otherwise a group that contains a single
+        # trusted dependency amongst others that require manual review will be approved automatically.
+        # See https://github.blog/2023-08-24-a-faster-way-to-manage-version-updates-with-dependabot/ for more information.
         if: |
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/cache') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/checkout') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/dependency-review-action') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/setup-dotnet') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'actions/setup-node') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'dependabot/fetch-metadata') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'github/codeql-action') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'Microsoft.NET.Test.Sdk') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'Microsoft.TypeScript.MSBuild') ||
-          contains(steps.dependabot-metadata.outputs.dependency-names, 'typescript')
+          steps.dependabot-metadata.outputs.dependency-names == 'actions/cache' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'actions/checkout' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'actions/dependency-review-action' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'actions/setup-dotnet' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'actions/setup-node' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'dependabot/fetch-metadata' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'github/codeql-action' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'Microsoft.NET.Test.Sdk' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'Microsoft.TypeScript.MSBuild' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'typescript'
         env:
           GH_TOKEN: ${{ steps.generate-application-token.outputs.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
