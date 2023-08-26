@@ -37,7 +37,7 @@ jobs:
 
     # Only run for pull requests created by accounts we are interested in
     # that might be used to create a pull request to update the .NET SDK.
-    if: ${{ github.event.repository.fork == false && github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME }}
+    if: github.event.repository.fork == false && github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME
 
     steps:
 
@@ -57,7 +57,7 @@ jobs:
       id: check-dependencies
       env:
         # This list of trusted package prefixes needs to stay in sync with the list of package prefixes used by the update-dotnet-sdk workflow.
-        # See https://github.com/martincostello/update-dotnet-sdk/blob/131cefcd75229c796aee0044a6ceb2a2e0d39f9a/.github/workflows/update-dotnet-sdk.yml#L36-L40.
+        # See https://github.com/martincostello/update-dotnet-sdk/blob/69851254bcd31fdb36ae8a382c19573197980638/.github/workflows/update-dotnet-sdk.yml#L75-L79.
         INCLUDE_NUGET_PACKAGES: "Microsoft.AspNetCore.,Microsoft.EntityFrameworkCore.,Microsoft.Extensions.,System.Text.Json"
         GH_TOKEN: ${{ steps.generate-application-token.outputs.token }}
       shell: pwsh
@@ -134,7 +134,7 @@ jobs:
       # introduced by the update should be caught by the tests. If that happens, the build
       # workflow will fail and the preconditions for the auto-merge to happen won't be met.
     - name: Approve pull request and enable auto-merge
-      if: ${{ steps.check-dependencies.outputs.is-trusted-update == 'true' }}
+      if: steps.check-dependencies.outputs.is-trusted-update == 'true'
       env:
         GH_TOKEN: ${{ steps.generate-application-token.outputs.token }}
         PR_URL: ${{ github.event.pull_request.html_url }}
@@ -159,7 +159,7 @@ jobs:
     # automatically if there's an unexpected change introduced. Any existing review
     # approvals that were made by the bot are also dismissed so human approval is required.
     - name: Disable auto-merge and dismiss approvals
-      if: ${{ steps.check-dependencies.outputs.is-trusted-update != 'true' }}
+      if: steps.check-dependencies.outputs.is-trusted-update != 'true'
       env:
         GH_TOKEN: ${{ steps.generate-application-token.outputs.token }}
         PR_URL: ${{ github.event.pull_request.html_url }}

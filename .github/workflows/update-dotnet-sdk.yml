@@ -54,9 +54,7 @@ jobs:
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
-    if : |
-      needs.update-sdk.outputs.sdk-updated =='true' &&
-      needs.update-sdk.outputs.security == 'true'
+    if: needs.update-sdk.outputs.sdk-updated =='true' && needs.update-sdk.outputs.security == 'true'
     steps:
     - name: Add security label
       env:

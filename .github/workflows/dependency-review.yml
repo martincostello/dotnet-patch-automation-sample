@@ -13,7 +13,7 @@ permissions:
 jobs:
   dependency-review:
     runs-on: ubuntu-latest
-    if: ${{ github.event.repository.fork == false }}
+    if: github.event.repository.fork == false
 
     steps:
 
