@@ -15,7 +15,7 @@
     <PackageReference Include="NodaTime" Version="3.1.9" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update=".prettierrc.json;package.json;package-lock.json;tsconfig.json" CopyToPublishDirectory="Never" />
+    <Content Update="package.json;package-lock.json;tsconfig.json" CopyToPublishDirectory="Never" />
     <None Remove="scripts\ts\**\*.ts" />
     <TypeScriptCompile Include="scripts\ts\**\*.ts" />
   </ItemGroup>
