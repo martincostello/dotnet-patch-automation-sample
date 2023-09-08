@@ -40,6 +40,7 @@ jobs:
           steps.dependabot-metadata.outputs.dependency-names == 'actions/dependency-review-action' ||
           steps.dependabot-metadata.outputs.dependency-names == 'actions/setup-dotnet' ||
           steps.dependabot-metadata.outputs.dependency-names == 'actions/setup-node' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'actions/upload-artifact' ||
           steps.dependabot-metadata.outputs.dependency-names == 'dependabot/fetch-metadata' ||
           steps.dependabot-metadata.outputs.dependency-names == 'github/codeql-action' ||
           steps.dependabot-metadata.outputs.dependency-names == 'Microsoft.NET.Test.Sdk' ||
