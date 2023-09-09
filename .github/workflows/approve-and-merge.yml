@@ -26,6 +26,7 @@ on:
       - dotnet-nightly
 
 env:
+  PULL_NUMBER: ${{ github.event.pull_request.number }}
   REVIEWER_LOGIN: "dotnet-patch-automation-reviewer[bot]"
 
 permissions:
@@ -37,7 +38,9 @@ jobs:
 
     # Only run for pull requests created by accounts we are interested in
     # that might be used to create a pull request to update the .NET SDK.
-    if: github.event.repository.fork == false && github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME
+    if: |
+      github.event.repository.fork == false &&
+      github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME
 
     steps:
 
@@ -60,19 +63,20 @@ jobs:
         # See https://github.com/martincostello/update-dotnet-sdk/blob/69851254bcd31fdb36ae8a382c19573197980638/.github/workflows/update-dotnet-sdk.yml#L75-L79.
         INCLUDE_NUGET_PACKAGES: "Microsoft.AspNetCore.,Microsoft.EntityFrameworkCore.,Microsoft.Extensions.,System.Text.Json"
         GH_TOKEN: ${{ steps.generate-application-token.outputs.token }}
+        GIT_COMMIT_USER_NAME: ${{ vars.GIT_COMMIT_USER_NAME }}
       shell: pwsh
       run: |
         # Replicate the logic in the dependabot/fetch-metadata action.
         # See https://github.com/dependabot/fetch-metadata/blob/aea2135c95039f05c64436f1d14638c300e10b2b/src/dependabot/update_metadata.ts#L29-L68.
         # Query the GitHub API to get the commits in the pull request.
         $commits = gh api `
-          /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits `
+          "/repos/${env:GITHUB_REPOSITORY}/pulls/${env:PULL_NUMBER}/commits" `
           --jq '.[] | { author: .author.login, message: .commit.message }' | ConvertFrom-Json
 
         # We should only approve pull requests that only contain commits from
         # the GitHub user we expected and only commits that contain the metadata
         # we need to determine what dependencies were updated by the other workflow.
-        $expectedUser = "${{ vars.GIT_COMMIT_USER_NAME }}"
+        $expectedUser = $env:GIT_COMMIT_USER_NAME
         $onlyDependencyUpdates = $True
         $onlyChangesFromUser = $True
 
@@ -140,7 +144,7 @@ jobs:
         PR_URL: ${{ github.event.pull_request.html_url }}
       shell: pwsh
       run: |
-        $approvals = gh api /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews | ConvertFrom-Json
+        $approvals = gh api "/repos/${env:GITHUB_REPOSITORY}/pulls/${env:PULL_NUMBER}/reviews" | ConvertFrom-Json
         $approvals = $approvals | Where-Object { $_.user.login -eq $env:REVIEWER_LOGIN }
         $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
@@ -165,7 +169,7 @@ jobs:
         PR_URL: ${{ github.event.pull_request.html_url }}
       shell: pwsh
       run: |
-        $approvals = gh api /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews | ConvertFrom-Json
+        $approvals = gh api "/repos/${env:GITHUB_REPOSITORY}/pulls/${env:PULL_NUMBER}/reviews" | ConvertFrom-Json
         $approvals = $approvals | Where-Object { $_.user.login -eq $env:REVIEWER_LOGIN }
         $approvals = $approvals | Where-Object { $_.state -eq "APPROVED" }
 
@@ -175,7 +179,7 @@ jobs:
           foreach ($approval in $approvals) {
             gh api `
               --method PUT `
-              /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$($approval.id)/dismissals `
+              /repos/${env:GITHUB_REPOSITORY}/pulls/${env:PULL_NUMBER}/reviews/$($approval.id)/dismissals `
               -f message='Cannot approve as other changes have been introduced.' `
               -f event='DISMISS'
           }
