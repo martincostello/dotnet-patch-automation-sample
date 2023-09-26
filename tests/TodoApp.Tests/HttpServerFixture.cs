@@ -60,7 +60,6 @@ public sealed class HttpServerFixture : TodoAppFixture
             .Select(x => new Uri(x))
             .Last();
 
-        testHost.Start();
         return testHost;
     }
 
