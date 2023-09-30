@@ -6,23 +6,15 @@ using Microsoft.Playwright;
 
 namespace TodoApp;
 
-public class BrowserFixture
+public class BrowserFixture(
+    BrowserFixtureOptions options,
+    ITestOutputHelper outputHelper)
 {
     private const string VideosDirectory = "videos";
 
-    public BrowserFixture(
-        BrowserFixtureOptions options,
-        ITestOutputHelper outputHelper)
-    {
-        Options = options;
-        OutputHelper = outputHelper;
-    }
-
     internal static bool IsRunningInGitHubActions { get; } = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
 
-    private BrowserFixtureOptions Options { get; }
-
-    private ITestOutputHelper OutputHelper { get; }
+    private BrowserFixtureOptions Options { get; } = options;
 
     public async Task WithPageAsync(
         Func<IPage, Task> action,
@@ -33,48 +25,47 @@ public class BrowserFixture
 
         using var playwright = await Playwright.CreateAsync();
 
-        await using (var browser = await CreateBrowserAsync(playwright))
-        {
-            var options = CreateContextOptions();
-            await using var context = await browser.NewContextAsync(options);
+        await using var browser = await CreateBrowserAsync(playwright);
 
+        var options = CreateContextOptions();
+        await using var context = await browser.NewContextAsync(options);
+
+        if (Options.CaptureTrace)
+        {
+            await context.Tracing.StartAsync(new()
+            {
+                Screenshots = true,
+                Snapshots = true,
+                Sources = true,
+                Title = activeTestName
+            });
+        }
+
+        var page = await context.NewPageAsync();
+
+        page.Console += (_, e) => outputHelper.WriteLine(e.Text);
+        page.PageError += (_, e) => outputHelper.WriteLine(e);
+
+        try
+        {
+            await action(page);
+        }
+        catch (Exception)
+        {
+            await TryCaptureScreenshotAsync(page, activeTestName);
+            throw;
+        }
+        finally
+        {
             if (Options.CaptureTrace)
             {
-                await context.Tracing.StartAsync(new()
-                {
-                    Screenshots = true,
-                    Snapshots = true,
-                    Sources = true,
-                    Title = activeTestName
-                });
+                string traceName = GenerateFileName(activeTestName, ".zip");
+                string path = Path.Combine("traces", traceName);
+
+                await context.Tracing.StopAsync(new() { Path = path });
             }
 
-            var page = await context.NewPageAsync();
-
-            page.Console += (_, e) => OutputHelper.WriteLine(e.Text);
-            page.PageError += (_, e) => OutputHelper.WriteLine(e);
-
-            try
-            {
-                await action(page);
-            }
-            catch (Exception)
-            {
-                await TryCaptureScreenshotAsync(page, activeTestName);
-                throw;
-            }
-            finally
-            {
-                if (Options.CaptureTrace)
-                {
-                    string traceName = GenerateFileName(activeTestName, ".zip");
-                    string path = Path.Combine("traces", traceName);
-
-                    await context.Tracing.StopAsync(new() { Path = path });
-                }
-
-                videoUrl = await TryCaptureVideoAsync(page, activeTestName);
-            }
+            videoUrl = await TryCaptureVideoAsync(page, activeTestName);
         }
     }
 
@@ -113,30 +104,6 @@ public class BrowserFixture
         return await playwright[Options.BrowserType].LaunchAsync(options);
     }
 
-    private static string GetDefaultBuildNumber()
-    {
-        string? build = Environment.GetEnvironmentVariable("GITHUB_RUN_NUMBER");
-
-        if (!string.IsNullOrEmpty(build))
-        {
-            return build;
-        }
-
-        return typeof(BrowserFixture).Assembly.GetName().Version!.ToString(3);
-    }
-
-    private static string GetDefaultProject()
-    {
-        string? project = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
-
-        if (!string.IsNullOrEmpty(project))
-        {
-            return project.Split('/')[1];
-        }
-
-        return "TodoApp";
-    }
-
     private string GenerateFileName(string testName, string extension)
     {
         string browserType = Options.BrowserType;
@@ -169,11 +136,11 @@ public class BrowserFixture
 
             await page.ScreenshotAsync(new() { Path = path });
 
-            OutputHelper.WriteLine($"Screenshot saved to {path}.");
+            outputHelper.WriteLine($"Screenshot saved to {path}.");
         }
         catch (Exception ex)
         {
-            OutputHelper.WriteLine("Failed to capture screenshot: " + ex);
+            outputHelper.WriteLine("Failed to capture screenshot: " + ex);
         }
     }
 
@@ -192,11 +159,11 @@ public class BrowserFixture
             await page.CloseAsync();
             await page.Video.SaveAsAsync(path);
 
-            OutputHelper.WriteLine($"Video saved to {path}.");
+            outputHelper.WriteLine($"Video saved to {path}.");
         }
         catch (Exception ex)
         {
-            OutputHelper.WriteLine("Failed to capture video: " + ex);
+            outputHelper.WriteLine("Failed to capture video: " + ex);
         }
 
         return null;
