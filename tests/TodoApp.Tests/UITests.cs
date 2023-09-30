@@ -21,19 +21,19 @@ public class UITests : IAsyncLifetime
 
     public static IEnumerable<object?[]> Browsers()
     {
-        yield return new[] { BrowserType.Chromium, null };
-        yield return new[] { BrowserType.Chromium, "chrome" };
+        yield return [BrowserType.Chromium, null];
+        yield return [BrowserType.Chromium, "chrome"];
 
         if (!OperatingSystem.IsLinux())
         {
-            yield return new[] { BrowserType.Chromium, "msedge" };
+            yield return [BrowserType.Chromium, "msedge"];
         }
 
-        yield return new[] { BrowserType.Firefox, null };
+        yield return [BrowserType.Firefox, null];
 
         if (OperatingSystem.IsMacOS())
         {
-            yield return new[] { BrowserType.Webkit, null };
+            yield return [BrowserType.Webkit, null];
         }
     }
 
@@ -122,9 +122,7 @@ public class UITests : IAsyncLifetime
 
     private static void InstallPlaywright()
     {
-#pragma warning disable CA1861
-        int exitCode = Microsoft.Playwright.Program.Main(new[] { "install" });
-#pragma warning restore CA1861
+        int exitCode = Microsoft.Playwright.Program.Main(["install"]);
 
         if (exitCode != 0)
         {
