@@ -84,7 +84,7 @@ function DotNetTest {
         $additionalArgs += "GitHubActions;report-warnings=false"
     }
 
-    & $dotnet test $Project --output $OutputPath --configuration $Configuration $additionalArgs
+    & $dotnet test $Project --output $OutputPath --configuration $Configuration --tl $additionalArgs
 
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet test failed with exit code $LASTEXITCODE"
@@ -95,7 +95,7 @@ function DotNetPublish {
     param([string]$Project)
 
     $publishPath = Join-Path $OutputPath "publish"
-    & $dotnet publish $Project --output $publishPath --configuration $Configuration
+    & $dotnet publish $Project --output $publishPath --tl
 
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet publish failed with exit code $LASTEXITCODE"
