@@ -83,3 +83,4 @@ jobs:
       name: Upload coverage to Codecov
       with:
         files: ./artifacts/coverage.cobertura.xml,./src/TodoApp/coverage/lcov.info
+        token: ${{ secrets.CODECOV_TOKEN }}
