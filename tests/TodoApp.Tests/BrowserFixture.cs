@@ -21,7 +21,6 @@ public class BrowserFixture(
         [CallerMemberName] string? testName = null)
     {
         string activeTestName = Options.TestName ?? testName!;
-        string? videoUrl = null;
 
         using var playwright = await Playwright.CreateAsync();
 
@@ -65,7 +64,7 @@ public class BrowserFixture(
                 await context.Tracing.StopAsync(new() { Path = path });
             }
 
-            videoUrl = await TryCaptureVideoAsync(page, activeTestName);
+            await TryCaptureVideoAsync(page, activeTestName);
         }
     }
 
