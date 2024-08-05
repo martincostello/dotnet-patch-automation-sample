@@ -8,7 +8,7 @@
     "build": "npm run compile && npm run format && npm run lint && npm test",
     "compile": "webpack",
     "format": "prettier --write scripts/**/*.ts && stylelint --fix styles/**/*.css",
-    "lint": "eslint",
+    "lint": "eslint scripts",
     "test": "jest"
   },
   "repository": {
