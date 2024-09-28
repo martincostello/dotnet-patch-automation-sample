@@ -2,9 +2,9 @@
 name: Bug report
 about: Create a bug report to help us improve this project
 labels: bug
-
 ---
 
+<!-- markdownlint-disable MD041 -->
 ### Describe the bug
 
 <!-- A clear and concise description of what the bug is. -->
@@ -28,7 +28,7 @@ labels: bug
 ### System information
 
 <!--
-- OS: [e.g. Windows 10]
+- OS: [e.g. Windows 11]
 - Application Version [e.g. Git commit SHA]
 - .NET version (e.g. output from `dotnet --info`)
 -->
