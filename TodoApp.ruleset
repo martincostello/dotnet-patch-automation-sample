@@ -2,9 +2,6 @@
 <RuleSet Name="TodoApp Rules" Description="This rule set contains rules for the TodoApp solution." ToolsVersion="17.0">
   <IncludeAll Action="Warning" />
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
-    <Rule Id="CA1515" Action="None" />
-  </Rules>
-  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1014" Action="None" />
     <Rule Id="CA1031" Action="None" />
     <Rule Id="CA1034" Action="None" />
@@ -13,6 +10,7 @@
     <Rule Id="CA1056" Action="None" />
     <Rule Id="CA1062" Action="None" />
     <Rule Id="CA1303" Action="None" />
+    <Rule Id="CA1515" Action="None" />
     <Rule Id="CA1707" Action="None" />
     <Rule Id="CA1711" Action="None" />
     <Rule Id="CA1720" Action="None" />
