@@ -227,8 +227,8 @@ This project is licensed under the [Apache 2.0][license] license.
 [approve-and-merge-workflow]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/.github/workflows/approve-and-merge.yml "approve-and-merge workflow"
 [approved-and-merged-bot]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/80 "Approved pull request created by a GitHub app"
 [approved-and-merged-pat]: https://github.com/martincostello/dotnet-patch-automation-sample/pull/37 "Approved pull request created by a GitHub user"
-[build-badge]: https://github.com/martincostello/dotnet-patch-automation-sample/workflows/build/badge.svg?branch=main&event=push
-[build-status]: https://github.com/martincostello/dotnet-patch-automation-sample/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush
+[build-badge]: https://github.com/martincostello/dotnet-patch-automation-sample/actions/workflows/build.yml/badge.svg?branch=main&event=push
+[build-status]: https://github.com/martincostello/dotnet-patch-automation-sample/actions/workflows/build.yml?query=branch%3Amain+event%3Apush
 [code-owners]: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners "About code owners"
 [continuous-integration]: https://github.com/martincostello/dotnet-patch-automation-sample/blob/main/.github/workflows/build.yml "The continuous integration workflow to build and test the application"
 [dependabot]: https://docs.github.com/code-security/dependabot/dependabot-version-updates/about-dependabot-version-updates "About Dependabot version updates"
