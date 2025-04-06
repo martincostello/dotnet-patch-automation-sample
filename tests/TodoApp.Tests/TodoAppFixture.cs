@@ -58,7 +58,7 @@ public class TodoAppFixture : WebApplicationFactory<Program>, ITestOutputHelperA
         });
 
         builder.ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders().AddXUnit(this));
-        builder.UseSolutionRelativeContentRoot(Path.Combine("src", "TodoApp"));
+        builder.UseSolutionRelativeContentRoot(Path.Combine("src", "TodoApp"), "*.slnx");
 
         builder.ConfigureServices(services =>
         {
