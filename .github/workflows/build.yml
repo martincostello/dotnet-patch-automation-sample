@@ -82,5 +82,4 @@ jobs:
     - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
       name: Upload coverage to Codecov
       with:
-        files: ./artifacts/coverage.cobertura.xml,./src/TodoApp/coverage/lcov.info
         token: ${{ secrets.CODECOV_TOKEN }}
