@@ -42,6 +42,7 @@ jobs:
   update-sdk:
     uses: martincostello/update-dotnet-sdk/.github/workflows/update-dotnet-sdk.yml@ee0555fe74ccf33a1d2f0a18e0acc0b190914d33 # v3.8.2
     with:
+      dotnet-roll-forward: 'Major'
       labels: 'dependencies,.NET'
       user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
       user-name: ${{ vars.GIT_COMMIT_USER_NAME }}
