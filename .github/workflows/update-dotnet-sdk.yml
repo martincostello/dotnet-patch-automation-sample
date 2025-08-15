@@ -43,7 +43,7 @@ jobs:
       labels: 'dependencies,.NET'
       user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
       user-name: ${{ vars.GIT_COMMIT_USER_NAME }}
-    # Set the minumum permissions for GITHUB_TOKEN as we are using a GitHub application to perform the updates.
+    # Set the minimum permissions for GITHUB_TOKEN as we are using a GitHub application to perform the updates.
     permissions:
       contents: read
     secrets:
