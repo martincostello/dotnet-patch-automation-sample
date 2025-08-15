@@ -29,8 +29,7 @@ env:
   PULL_NUMBER: ${{ github.event.pull_request.number }}
   REVIEWER_LOGIN: "dotnet-patch-automation-reviewer[bot]"
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   review-pull-request:
@@ -41,6 +40,9 @@ jobs:
     if: |
       github.event.repository.fork == false &&
       github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME
+
+    permissions:
+      contents: read
 
     steps:
 
