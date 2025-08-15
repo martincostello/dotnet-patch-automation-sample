@@ -2,13 +2,15 @@ name: dependabot-approve
 
 on: pull_request_target
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   dependabot:
     runs-on: ubuntu-latest
     if: github.event.repository.fork == false && github.event.pull_request.user.login == 'dependabot[bot]'
+
+    permissions:
+      contents: read
 
     steps:
 

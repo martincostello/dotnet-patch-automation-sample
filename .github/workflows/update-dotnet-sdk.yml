@@ -19,9 +19,7 @@ on:
   # Also support running the workflow manually on-demand.
   workflow_dispatch:
 
-# Set the minumum permissions for GITHUB_TOKEN as we are using a GitHub application to perform the updates.
-permissions:
-  contents: read
+permissions: {}
 
 # Using a personal access token or a GitHub app is recommended instead of using GITHUB_TOKEN, otherwise
 # pull requests opened by this workflow, and commits pushed, will not queue your CI status checks if you
@@ -45,6 +43,9 @@ jobs:
       labels: 'dependencies,.NET'
       user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
       user-name: ${{ vars.GIT_COMMIT_USER_NAME }}
+    # Set the minumum permissions for GITHUB_TOKEN as we are using a GitHub application to perform the updates.
+    permissions:
+      contents: read
     secrets:
       application-id: ${{ secrets.UPDATER_APPLICATION_ID }}
       application-private-key: ${{ secrets.UPDATER_APPLICATION_PRIVATE_KEY }}
