@@ -41,6 +41,7 @@ jobs:
         if: |
           steps.dependabot-metadata.outputs.dependency-names == 'actions/cache' ||
           steps.dependabot-metadata.outputs.dependency-names == 'actions/checkout' ||
+          steps.dependabot-metadata.outputs.dependency-names == 'actions/create-github-app-token' ||
           steps.dependabot-metadata.outputs.dependency-names == 'actions/dependency-review-action' ||
           steps.dependabot-metadata.outputs.dependency-names == 'actions/setup-dotnet' ||
           steps.dependabot-metadata.outputs.dependency-names == 'actions/setup-node' ||
