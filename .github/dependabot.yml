@@ -30,6 +30,7 @@ updates:
         - "@typescript-eslint/*"
     vitest:
       patterns:
+        - "vitest"
         - "@vitest/*"
   schedule:
     day: monday
