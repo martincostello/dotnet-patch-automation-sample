@@ -39,12 +39,7 @@ public class TodoAppFixture : WebApplicationFactory<Program>, ITestOutputHelperA
     {
         builder.ConfigureAppConfiguration(configBuilder =>
         {
-            var dataDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-            if (!Directory.Exists(dataDirectory))
-            {
-                Directory.CreateDirectory(dataDirectory);
-            }
+            var dataDirectory = Directory.CreateTempSubdirectory().FullName;
 
             var config = new[]
             {
