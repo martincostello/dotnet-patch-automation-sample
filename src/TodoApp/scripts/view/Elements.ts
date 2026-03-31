@@ -17,23 +17,23 @@ export class Elements {
     readonly loader: HTMLElement;
 
     constructor() {
-        this.banner = document.getElementById('banner');
-        this.createItemButton = document.getElementById('add-new-item');
-        this.createItemForm = document.getElementById('add-form');
+        this.banner = document.getElementById('banner')!;
+        this.createItemButton = document.getElementById('add-new-item')!;
+        this.createItemForm = document.getElementById('add-form')!;
         this.createItemText = <HTMLInputElement>(
             document.getElementById('new-item-text')
         );
-        this.itemList = document.getElementById('item-list');
-        this.itemTable = document.getElementById('item-table');
-        this.itemTemplate = document.getElementById('item-template');
-        this.loader = document.getElementById('loader');
+        this.itemList = document.getElementById('item-list')!;
+        this.itemTable = document.getElementById('item-table')!;
+        this.itemTemplate = document.getElementById('item-template')!;
+        this.loader = document.getElementById('loader')!;
     }
 
     createNewItem(item: TodoItem): TodoElement {
         const node = this.itemTemplate.cloneNode(true);
         this.itemList.appendChild(node);
 
-        const element = this.itemList.lastElementChild;
+        const element = this.itemList.lastElementChild!;
         element.classList.add(Classes.item);
 
         return new TodoElement(element, item);
