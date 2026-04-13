@@ -39,7 +39,7 @@
     "tsify": "5.0.4",
     "typescript": "6.0.2",
     "vitest": "4.1.2",
-    "webpack": "5.105.4",
+    "webpack": "5.106.1",
     "webpack-cli": "7.0.2",
     "webpack-remove-empty-scripts": "1.1.1"
   },
