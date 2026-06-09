@@ -31,6 +31,10 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
 
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.sha }}
+      cancel-in-progress: false
+
     permissions:
       contents: read
 
@@ -61,32 +65,9 @@ jobs:
       shell: pwsh
       run: echo "dir=$(npm config get cache)" >> ${env:GITHUB_OUTPUT}
 
-    - name: Setup npm cache
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      id: npm-cache
-      with:
-        path: ${{ steps.npm-cache-dir.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-node-
-
-    - name: Setup NuGet cache
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
-        restore-keys: ${{ runner.os }}-nuget-
-
-    - name: Setup Playwright cache
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-playwright-${{ hashFiles('Directory.Packages.props') }}
-
     - name: Build, Test and Publish
       shell: pwsh
       run: ./build.ps1
 
     - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       name: Upload coverage to Codecov
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}

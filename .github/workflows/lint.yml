@@ -25,6 +25,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.sha }}
+      cancel-in-progress: false
+
     permissions:
       contents: read
 
@@ -39,9 +43,14 @@ jobs:
       run: echo "::add-matcher::.github/actionlint-matcher.json"
 
     - name: Lint workflows with actionlint
-      uses: docker://rhysd/actionlint@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9 # v1.7.7
+      uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
       with:
         args: -color
+
+    - name: Lint workflows with zizmor
+      uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+      with:
+        persona: pedantic
 
     - name: Lint markdown
       uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd # v23.2.0
