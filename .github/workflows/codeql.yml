@@ -20,6 +20,10 @@ jobs:
     timeout-minutes: 20
     if: github.event.repository.fork == false
 
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.sha }}
+      cancel-in-progress: false
+
     permissions:
       actions: read
       contents: read
@@ -53,6 +57,10 @@ jobs:
     needs: [ analysis ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.sha }}
+      cancel-in-progress: false
 
     steps:
     - name: Report status

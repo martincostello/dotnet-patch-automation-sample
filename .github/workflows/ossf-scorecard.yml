@@ -8,7 +8,7 @@ on:
     - cron: '0 6 * * MON'
   workflow_dispatch:
 
-permissions: read-all
+permissions: {}
 
 jobs:
   analysis:
@@ -17,8 +17,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.sha }}
+      cancel-in-progress: false
+
     permissions:
+      checks: read
+      contents: read
       id-token: write
+      issues: read
+      pull-requests: read
       security-events: write
 
     steps:

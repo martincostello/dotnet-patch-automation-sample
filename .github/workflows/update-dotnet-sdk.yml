@@ -53,6 +53,9 @@ jobs:
 
   add-security-label:
     needs: update-sdk
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.sha }}
+      cancel-in-progress: false
     permissions:
       pull-requests: write
     runs-on: ubuntu-24.04
