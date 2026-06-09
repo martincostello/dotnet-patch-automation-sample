@@ -21,7 +21,7 @@ jobs:
     if: github.event.repository.fork == false
 
     concurrency:
-      group: ${{ github.workflow }}-${{ github.sha }}
+      group: '${{ github.workflow }}-${{ github.sha }}-${{ matrix.language }}'
       cancel-in-progress: false
 
     permissions:
