@@ -65,7 +65,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ steps.generate-application-token.outputs.token }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if [ "$(gh pr view "${PR_NUMBER}" --json reviewDecision --jq .reviewDecision --repo "${GITHUB_REPOSITORY}")" != "APPROVED" ];
           then gh pr review --approve "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}" && gh pr merge --auto --squash "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}"
