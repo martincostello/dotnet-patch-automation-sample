@@ -4,6 +4,12 @@ updates:
   cooldown:
     default-days: 3
   directory: "/"
+  groups:
+    github/codeql-action:
+      patterns:
+        - github/codeql-action/analyze
+        - github/codeql-action/init
+        - github/codeql-action/upload-sarif
   schedule:
     day: monday
     interval: weekly
