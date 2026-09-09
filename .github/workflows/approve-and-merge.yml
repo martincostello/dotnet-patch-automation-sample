@@ -39,7 +39,8 @@ jobs:
     # that might be used to create a pull request to update the .NET SDK.
     if: |
       github.event.repository.fork == false &&
-      github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME
+      github.event.pull_request.user.login == vars.GIT_COMMIT_USER_NAME &&
+      github.event.pull_request.draft == false
 
     concurrency:
       group: ${{ github.workflow }}-${{ github.sha }}
